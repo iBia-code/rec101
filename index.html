@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800;6..12,900&family=JetBrains+Mono:wght@700;800&display=swap">
+<title>101 Recorder · Perekam</title>
+<!--
+  PEREKAM 101 — halaman ini SENGAJA hidup di LUAR Google Apps Script.
+
+  Google tidak memberi izin mikrofon pada bingkai tempat semua web app Apps
+  Script jalan, dan tidak ada kode di dalam project yang bisa mengubahnya.
+  Jadi app 101 Recorder (Apps Script) membuka halaman ini sebagai jendela
+  baru; di sini mikrofon boleh dipakai. Selesai merekam, audionya dikirim
+  BALIK ke app lewat postMessage, dan app itulah yang mengunggahnya ke Drive
+  orang yang merekam.
+
+  TIDAK ADA yang disimpan di server halaman ini. Audio cuma pernah ada di HP
+  (IndexedDB halaman ini, sebagai cadangan) dan di Drive.
+
+  Sumber: Webapp/rec101-web/index.html (repo Cowork Playground). Gaya kaca
+  disalin dari recorder-101/Index.html, yang menyalinnya apa adanya dari
+  skill henri-glassy-mode.
+-->
+<script>
+window.onerror = function (m, s, l) {
+  var b = document.getElementById('bootmark');
+  if (b) { b.style.display = 'block'; b.textContent = 'Error: ' + m + ' (baris ' + l + ')'; }
+};
+</script>
+<style>
+/* =====================================================================
+   HENRI GLASSY MODE — tokens.css, DISALIN APA ADANYA oleh rakit.py dari
+   ~/.claude/skills/henri-glassy-mode/references/. Jangan disunting di sini.
+   ===================================================================== */
+/* ====================================================================
+   HENRI GLASSY MODE — token apa adanya, DISALIN dari EJB OS V21.
+   Jangan diketik ulang: tiap angka di sini hasil setelan bolak-balik,
+   dan satu digit yang meleset menghapus efeknya tanpa satu pun error.
+   ==================================================================== */
+
+:root{
+  --glass:rgba(14,16,22,.14); --glass-hi:rgba(52,54,62,.72);
+  --kartu-bg:rgba(14,16,21,.30);
+  --ic-kaca-bg:rgba(8,10,14,.80);
+  --bf-sheet: blur(13px) saturate(195%);
+  --lg-pool:
+    radial-gradient(72% 46% at 50% 108%, rgba(255,255,255,.34) 0%,
+    rgba(255,255,255,.10) 42%, transparent 72%);
+  --lg-rim:
+    inset 0 0 0 1px rgba(255,255,255,.34),
+    inset 0 2px 1px -1px rgba(255,255,255,.62),
+    inset 0 -2px 1px -1px rgba(255,255,255,.30),
+    inset 0 3px 5px -2px rgba(255,255,255,.16),
+    inset 0 0 6px 4px rgba(0,0,0,.26),
+    inset 0 0 0 5px rgba(255,255,255,.07);
+  --lg-lift: 0 -2px 6px rgba(255,255,255,.05),
+    0 10px 26px rgba(0,0,0,.48),
+    0 2px 6px rgba(0,0,0,.32);
+  --kaca-kilau:rgba(255,255,255,.26);
+  --kaca-body:
+    /* Sapuan diagonal dipendekkan: dia yang dulu menerangkan sampai ke tengah
+    kartu, jadi bidang gelapnya cuma sisa sempit di bawah. */
+    linear-gradient(159deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,.03) 9%,
+    rgba(255,255,255,0) 22%),
+    radial-gradient(140% 54% at 50% -30%, rgba(196,214,255,.09) 0%, transparent 48%),
+    /* Palung tengah: bidang gelap yang MELEBAR ke seluruh badan, bukan cuma
+    pita di pinggir. Inilah yang membuat kacanya terbaca tebal — pinggir
+    menyala, tengah dalam. */
+    radial-gradient(118% 108% at 50% 58%, rgba(0,0,0,.09) 0%, rgba(0,0,0,.06) 58%,
+    rgba(0,0,0,.02) 86%, transparent 100%),
+    linear-gradient(180deg, rgba(255,255,255,.05) 0%, transparent 100%);
+  --kaca-dalam: inset 0 0 0 1px rgba(0,0,0,.30);
+  --kaca-iris:
+    radial-gradient(60% 7px at 28% 0%,   rgba(255,176,220,.94), transparent 100%),
+    radial-gradient(52% 6px at 80% 0%,   rgba(255,222,168,.84), transparent 100%),
+    radial-gradient(6px 58% at 0% 40%,   rgba(168,214,255,.96), transparent 100%),
+    radial-gradient(6px 54% at 100% 58%, rgba(176,196,255,.86), transparent 100%),
+    radial-gradient(52% 8px at 64% 100%, rgba(150,240,200,.82), transparent 100%),
+    radial-gradient(42% 6px at 16% 100%, rgba(186,220,255,.68), transparent 100%);
+  --kaca-iris-kecil:
+    radial-gradient(60% 6px at 28% 0%,   rgba(255,176,220,.92), transparent 100%),
+    radial-gradient(52% 6px at 80% 0%,   rgba(255,222,168,.82), transparent 100%),
+    radial-gradient(6px 58% at 0% 40%,   rgba(168,214,255,.94), transparent 100%),
+    radial-gradient(6px 54% at 100% 58%, rgba(176,196,255,.84), transparent 100%),
+    radial-gradient(52% 7px at 64% 100%, rgba(150,240,200,.80), transparent 100%),
+    radial-gradient(42% 6px at 16% 100%, rgba(186,220,255,.66), transparent 100%);
+  --kaca-cekung:
+    linear-gradient(to bottom, rgba(0,0,0,.94) 0, rgba(0,0,0,.50) 2.5px,
+    rgba(0,0,0,.14) 4.5px, rgba(0,0,0,0) 7px),
+    linear-gradient(to top,    rgba(0,0,0,.66) 0, rgba(0,0,0,.26) 2.5px,
+    rgba(0,0,0,0) 6px),
+    linear-gradient(to right,  rgba(0,0,0,.86) 0, rgba(0,0,0,.36) 2.5px,
+    rgba(0,0,0,0) 6px),
+    linear-gradient(to left,   rgba(0,0,0,.86) 0, rgba(0,0,0,.36) 2.5px,
+    rgba(0,0,0,0) 6px);
+  --kaca-cekung-sm:
+    linear-gradient(to bottom, rgba(0,0,0,.92) 0, rgba(0,0,0,.44) 2.5px,
+    rgba(0,0,0,0) 6px),
+    linear-gradient(to top,    rgba(0,0,0,.66) 0, rgba(0,0,0,.24) 2.5px,
+    rgba(0,0,0,0) 5px),
+    linear-gradient(to right,  rgba(0,0,0,.84) 0, rgba(0,0,0,.34) 2.5px,
+    rgba(0,0,0,0) 5px),
+    linear-gradient(to left,   rgba(0,0,0,.84) 0, rgba(0,0,0,.34) 2.5px,
+    rgba(0,0,0,0) 5px);
+  --kaca-lapis:
+    var(--kaca-iris),
+    var(--kaca-cekung),
+    radial-gradient(120% 52% at 50% -26%, var(--kaca-kilau), transparent 72%),
+    var(--lg-pool),
+    var(--kaca-body);
+  --kaca-lapis-sm:
+    var(--kaca-iris-kecil),
+    var(--kaca-cekung-sm),
+    radial-gradient(120% 46% at 50% -22%, var(--kaca-kilau), transparent 68%),
+    var(--lg-pool),
+    var(--kaca-body);
+}
+
+:root[data-theme="light"]{
+  --glass:rgba(255,255,255,.10); --glass-hi:rgba(255,255,255,.78);
+  --kartu-bg:rgba(255,255,255,.20);
+  --ic-kaca-bg:rgba(255,255,255,.34);
+  --bf-sheet: blur(10px) saturate(145%);
+  --lg-pool:
+    radial-gradient(72% 46% at 50% 108%, rgba(255,255,255,.80) 0%,
+    rgba(255,255,255,.30) 42%, transparent 72%);
+  --lg-rim:
+    inset 0 0 0 1px rgba(255,255,255,.95),
+    inset 0 1.5px 0 rgba(255,255,255,1),
+    inset 0 -1.5px 0 rgba(255,255,255,.90);
+  --lg-lift: 0 8px 20px rgba(120,124,132,.35), 0 2px 5px rgba(120,124,132,.25);
+  --kaca-kilau:rgba(255,255,255,.62);
+  --kaca-body:
+    linear-gradient(159deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,.03) 24%,
+    transparent 52%);
+  --kaca-dalam: inset 0 0 0 1px rgba(16,24,40,.06);
+  --kaca-iris:
+    radial-gradient(60% 7px at 28% 0%,   rgba(216,120,176,.64), transparent 100%),
+    radial-gradient(52% 6px at 80% 0%,   rgba(214,166,96,.58),  transparent 100%),
+    radial-gradient(6px 58% at 0% 40%,   rgba(86,150,214,.66),  transparent 100%),
+    radial-gradient(6px 54% at 100% 58%, rgba(104,130,214,.56), transparent 100%),
+    radial-gradient(52% 8px at 64% 100%, rgba(52,178,132,.56),  transparent 100%),
+    radial-gradient(42% 6px at 16% 100%, rgba(112,158,226,.46), transparent 100%);
+  --kaca-iris-kecil:
+    radial-gradient(60% 6px at 28% 0%,   rgba(216,120,176,.62), transparent 100%),
+    radial-gradient(52% 6px at 80% 0%,   rgba(214,166,96,.56),  transparent 100%),
+    radial-gradient(6px 58% at 0% 40%,   rgba(86,150,214,.64),  transparent 100%),
+    radial-gradient(6px 54% at 100% 58%, rgba(104,130,214,.54), transparent 100%),
+    radial-gradient(52% 7px at 64% 100%, rgba(52,178,132,.52),  transparent 100%),
+    radial-gradient(42% 6px at 16% 100%, rgba(112,158,226,.42), transparent 100%);
+  --kaca-cekung:
+    linear-gradient(to bottom, rgba(22,32,54,.32) 0, rgba(22,32,54,.13) 2.5px,
+    rgba(22,32,54,.04) 4.5px, rgba(22,32,54,0) 7px),
+    linear-gradient(to top,    rgba(22,32,54,.19) 0, rgba(22,32,54,.06) 2.5px,
+    rgba(22,32,54,0) 6px),
+    linear-gradient(to right,  rgba(22,32,54,.26) 0, rgba(22,32,54,.09) 2.5px,
+    rgba(22,32,54,0) 6px),
+    linear-gradient(to left,   rgba(22,32,54,.26) 0, rgba(22,32,54,.09) 2.5px,
+    rgba(22,32,54,0) 6px);
+  --kaca-cekung-sm:
+    linear-gradient(to bottom, rgba(22,32,54,.30) 0, rgba(22,32,54,.12) 2.5px,
+    rgba(22,32,54,0) 6px),
+    linear-gradient(to top,    rgba(22,32,54,.18) 0, rgba(22,32,54,.06) 2.5px,
+    rgba(22,32,54,0) 5px),
+    linear-gradient(to right,  rgba(22,32,54,.24) 0, rgba(22,32,54,.09) 2.5px,
+    rgba(22,32,54,0) 5px),
+    linear-gradient(to left,   rgba(22,32,54,.24) 0, rgba(22,32,54,.09) 2.5px,
+    rgba(22,32,54,0) 5px);
+  --kaca-lapis:
+    var(--kaca-iris),
+    var(--kaca-cekung),
+    radial-gradient(120% 52% at 50% -26%, var(--kaca-kilau), transparent 72%),
+    var(--lg-pool),
+    var(--kaca-body);
+  --kaca-lapis-sm:
+    var(--kaca-iris-kecil),
+    var(--kaca-cekung-sm),
+    radial-gradient(120% 46% at 50% -22%, var(--kaca-kilau), transparent 68%),
+    var(--lg-pool),
+    var(--kaca-body);
+}
+
+/* =====================================================================
+   TEPI TIPIS — tokens-tipis.css, standar kelima app sejak 23-09-2026.
+   Permukaan merujuk --op-*, token skill di atas tidak disentuh.
+   ===================================================================== */
+/* ====================================================================
+   HENRI GLASSY MODE — TEPI TIPIS (standar sejak 23-09-2026)
+   Dipakai KELIMA app. Sumber hidupnya Opella Push/Index.html; berkas ini
+   salinannya untuk surface BARU. Salin apa adanya — jangan diketik ulang.
+
+   Pakai BERSAMA tokens.css, bukan menggantikannya: --op-lapis merujuk
+   --kaca-body dari tokens.css, dan --op-face (app akrilik) merujuk
+   --lg-hollow + --lg-dish. Token skill tetap utuh; permukaan saja yang
+   merujuk --op-*.
+   ==================================================================== */
+
+:root{
+  /* TEPI TIPIS — dari Opella Push V5 (23-09-2026) atas
+     permintaan Henri: tepi kaca tipis di KELIMA app. Sumber tunggalnya
+     Opella Push/Index.html + skills/henri-glassy-mode/references/
+     tokens-tipis.css. Jangan disetel di satu app saja: dua bahan di app
+     yang berdampingan terbaca satu yang rusak, bukan dua gaya. */
+  /* ---- Opella Push V5: TEPI TIPIS, TENGAH LEBAR -------------------------
+     Permintaan Henri: tampilan lebih modern & profesional — pinggir kaca yang
+     tebal (pita cekung 7px, pendar 6-8px, cincin sisipan 5px) dibaca sebagai
+     BINGKAI, dan bingkai itu memakan bidang tengah tempat angkanya duduk.
+
+     SENGAJA set token SENDIRI (--op-*), bukan menyunting token skill di atas:
+     token --kaca-* / --lg-* tetap salinan apa adanya dari henri-glassy-mode,
+     jadi (1) tetap bisa dibandingkan dengan skill, dan (2) kalau Henri suka,
+     blok ini tinggal disalin ke empat app lain. Menimpa token skill di blok
+     kedua justru pelajaran Cockpit: yang belakangan menang, nol error, dan
+     orang berikutnya menyetel token yang tidak berpengaruh apa-apa.
+
+     Pita dipersempit ke 2-3px; alpha awalnya dijaga cukup tinggi supaya
+     masih terbaca sebagai GARIS tajam, bukan hilang (jebakan 6 skill: pita
+     yang dipendekkan tanpa dipertebal = terhapus). Kolam terang di dasar
+     (--lg-pool) dibuang: dialah yang membuat dasar kartu terbaca sebagai tepi
+     kedua. Bayangan jatuh cukup --kartu-sh; --lg-lift yang besar dobel. */
+  --op-iris:
+    radial-gradient(60% 3px at 28% 0%,   rgba(255,176,220,.62), transparent 100%),
+    radial-gradient(52% 3px at 80% 0%,   rgba(255,222,168,.52), transparent 100%),
+    radial-gradient(3px 58% at 0% 40%,   rgba(168,214,255,.55), transparent 100%),
+    radial-gradient(3px 54% at 100% 58%, rgba(176,196,255,.48), transparent 100%),
+    radial-gradient(52% 3px at 64% 100%, rgba(150,240,200,.48), transparent 100%);
+  --op-cekung:
+    linear-gradient(to bottom, rgba(0,0,0,.72) 0, rgba(0,0,0,.20) 1.5px, rgba(0,0,0,0) 3px),
+    linear-gradient(to top,    rgba(0,0,0,.45) 0, rgba(0,0,0,0) 2px),
+    linear-gradient(to right,  rgba(0,0,0,.55) 0, rgba(0,0,0,0) 2px),
+    linear-gradient(to left,   rgba(0,0,0,.55) 0, rgba(0,0,0,0) 2px);
+  --op-rim: inset 0 0 0 1px rgba(255,255,255,.16), inset 0 1px 0 rgba(255,255,255,.34);
+  --op-lift: 0 -1px 0 rgba(255,255,255,.04);
+  --op-lapis:
+    var(--op-iris), var(--op-cekung),
+    radial-gradient(120% 36% at 50% -16%, rgba(255,255,255,.12), transparent 70%),
+    var(--kaca-body);
+  --op-lapis-sm:
+    var(--op-iris), var(--op-cekung),
+    radial-gradient(120% 32% at 50% -14%, rgba(255,255,255,.10), transparent 66%),
+    var(--kaca-body);
+}
+
+:root[data-theme="light"]{
+  /* Tepi tipis — versi terang. Hairline gelap 1px di LUAR menggantikan pita
+     tebal: di atas putih, tepi yang tegas datang dari satu garis tipis, bukan
+     dari bayangan lebar. */
+  --op-iris:
+    radial-gradient(60% 3px at 28% 0%,   rgba(216,120,176,.46), transparent 100%),
+    radial-gradient(52% 3px at 80% 0%,   rgba(214,166,96,.40),  transparent 100%),
+    radial-gradient(3px 58% at 0% 40%,   rgba(86,150,214,.44),  transparent 100%),
+    radial-gradient(3px 54% at 100% 58%, rgba(104,130,214,.38), transparent 100%),
+    radial-gradient(52% 3px at 64% 100%, rgba(52,178,132,.38),  transparent 100%);
+  --op-cekung:
+    linear-gradient(to bottom, rgba(22,32,54,.20) 0, rgba(22,32,54,.05) 1.5px, rgba(22,32,54,0) 3px),
+    linear-gradient(to top,    rgba(22,32,54,.12) 0, rgba(22,32,54,0) 2px),
+    linear-gradient(to right,  rgba(22,32,54,.14) 0, rgba(22,32,54,0) 2px),
+    linear-gradient(to left,   rgba(22,32,54,.14) 0, rgba(22,32,54,0) 2px);
+  --op-rim: inset 0 0 0 1px rgba(255,255,255,.95), inset 0 1px 0 rgba(255,255,255,1),
+    0 0 0 1px rgba(16,24,40,.08);
+  --op-lift: 0 0 0 0 transparent;
+  --op-lapis:
+    var(--op-iris), var(--op-cekung),
+    radial-gradient(120% 36% at 50% -16%, rgba(255,255,255,.55), transparent 70%),
+    var(--kaca-body);
+  --op-lapis-sm:
+    var(--op-iris), var(--op-cekung),
+    radial-gradient(120% 32% at 50% -14%, rgba(255,255,255,.50), transparent 66%),
+    var(--kaca-body);
+}
+
+/* App bahan AKRILIK lama (pil terpilih, bukan kartu) — Daily, Cockpit, GPS:
+   --op-face: var(--op-iris), var(--lg-hollow), var(--lg-dish);
+   dideklarasikan di TIAP blok tema yang mendeklarasikan --lg-lift, supaya
+   hollow/dish-nya ikut tema blok itu. */
+
+/* ---------- token halaman (bukan milik skill) ---------- */
+:root{
+  --stage:#0A0B0D;
+  --txt:#FFF; --txt2:rgba(255,255,255,.72); --txt3:rgba(255,255,255,.55);
+  --fill:rgba(120,120,128,.32); --fill2:rgba(120,120,128,.20);
+  --stroke:rgba(255,255,255,.12); --stroke-hi:rgba(255,255,255,.20);
+  --swx-green:#14C47D; --on-green:#04211B;
+  --ok:#32D74B; --warn:#FFB340; --err:#FF6961;
+  /* Merah rekam: warna sistem iOS untuk "sedang merekam" — orang sudah
+     mengenalnya dari aplikasi perekam bawaan HP-nya. */
+  --rec:#FF453A; --rec-dim:rgba(255,69,58,.18);
+  --kartu-sh:0 8px 20px rgba(0,0,0,.42), 0 1px 3px rgba(0,0,0,.34);
+  --ease-pop:cubic-bezier(.2,.9,.3,1.3); --ease-sheet:cubic-bezier(.32,.72,0,1);
+  --dur-tap:160ms;
+}
+:root[data-theme="light"]{
+  --stage:#DFE3EA;
+  /* Tinta MENGGELAP saat kaca menipis (aturan skill): latar yang tembus jadi
+     berpola, dan yang merusak keterbacaan di situ adalah VARIASI-nya. */
+  --txt:#05070A; --txt2:rgba(6,9,14,.88); --txt3:rgba(6,9,14,.74);
+  --fill:rgba(118,118,128,.20); --fill2:rgba(118,118,128,.12);
+  --stroke:rgba(0,0,0,.16); --stroke-hi:rgba(0,0,0,.12);
+  /* #14C47D di atas putih cuma ±2,2:1 — gagal untuk teks. */
+  --swx-green:#0E9E63; --on-green:#FFFFFF;
+  --ok:#0E9E63; --warn:#B27400; --err:#D1443B;
+  --rec:#D70015; --rec-dim:rgba(215,0,21,.12);
+  --kartu-sh:0 5px 12px rgba(16,22,38,.10), 0 1px 3px rgba(16,22,38,.07);
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:var(--stage);color:var(--txt);
+  font:400 16px/1.4 'Nunito Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  letter-spacing:-.01em;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* Dinding yang SAMA dengan EJB OS. Kaca yang tembus di atas halaman hitam
+   tetap terlihat hitam (jebakan #4) — harus ada sesuatu untuk dilihat. */
+.wall{position:fixed;inset:-25%;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(56% 44% at 22% 16%,rgba(20,196,125,.52),transparent 68%),
+    radial-gradient(54% 44% at 82% 64%,rgba(124,92,255,.50),transparent 70%),
+    radial-gradient(50% 38% at 66% 12%,rgba(64,150,255,.30),transparent 68%),
+    radial-gradient(58% 46% at 40% 104%,rgba(0,178,164,.34),transparent 72%);
+  animation:drift 26s ease-in-out infinite alternate}
+:root[data-theme="light"] .wall{opacity:.55}
+@keyframes drift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(0,-3%,0) scale(1.06)}}
+@media (prefers-reduced-motion:reduce){.wall{animation:none}}
+
+#bootmark{display:none;position:fixed;left:12px;right:12px;top:12px;z-index:99;
+  padding:10px 12px;border-radius:12px;background:#3A0D0D;color:#FFD3D0;font:600 13px/1.4 monospace}
+
+.app{position:relative;z-index:1;max-width:460px;margin:0 auto;
+  padding:calc(14px + env(safe-area-inset-top,0)) 16px calc(40px + env(safe-area-inset-bottom,0))}
+
+/* ---------- kepala ---------- */
+.head{display:flex;align-items:center;gap:12px;padding:6px 4px 18px}
+.swx{width:36px;height:30px;flex:none;display:block;filter:drop-shadow(0 6px 16px rgba(0,0,0,.45))}
+.wm{flex:1;min-width:0}
+.wm b{display:block;font-size:21px;font-weight:900;letter-spacing:-.035em;line-height:1.1}
+.wm b em{font-style:normal;color:var(--swx-green)}
+.wm span{display:block;font-size:12px;font-weight:700;color:var(--txt3);margin-top:2px}
+
+/* ---------- kaca ---------- */
+/* Satu resep untuk semua permukaan: lapisan di `background`, bukan ::before
+   (anak di bawah pelek ::before ikut teredam — sudah dibayar di EJB OS). */
+.kaca{position:relative;overflow:hidden;border-radius:22px;padding:18px;
+  background:var(--op-lapis),var(--kartu-bg);
+  border:.5px solid var(--stroke-hi);
+  box-shadow:var(--kartu-sh),var(--op-lift),var(--op-rim),var(--kaca-dalam);
+  -webkit-backdrop-filter:var(--bf-sheet);backdrop-filter:var(--bf-sheet)}
+/* Jarak antarbagian 24px = 1,5x jarak di dalam kartu (16px) — aturan yang
+   sama dengan EJB OS V26 / EJB Daily V48. */
+.kaca + .kaca{margin-top:24px}
+.kaca h2{margin:0 0 4px;font-size:11px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--swx-green);display:flex;align-items:center;gap:7px}
+.kaca h2 i{width:7px;height:7px;border-radius:50%;background:currentColor;display:block}
+.kaca .sub{margin:0 0 14px;font-size:12.5px;color:var(--txt3);line-height:1.45}
+.hide{display:none!important}
+
+.tombol-bulat{width:42px;height:42px;flex:none;border-radius:50%;cursor:pointer;text-decoration:none;
+  border:.5px solid var(--stroke-hi);color:var(--txt);font-size:17px;
+  background:var(--op-lapis-sm),var(--ic-kaca-bg);
+  box-shadow:var(--op-rim),var(--kaca-dalam);
+  display:grid;place-items:center;transition:transform var(--dur-tap) var(--ease-pop)}
+.tombol-bulat:active{transform:scale(.9)}
+
+/* ---------- isian ---------- */
+label.f{display:block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--txt3);margin:0 0 6px}
+label.f + input, label.f + textarea{margin-bottom:14px}
+input,textarea{width:100%;border:.5px solid var(--stroke);border-radius:13px;
+  background:var(--fill2);color:var(--txt);padding:12px 13px;
+  /* 16px: di bawah itu Safari iPhone MEMPERBESAR halaman saat kolom disentuh. */
+  font:600 16px/1.35 'Nunito Sans',sans-serif;outline:none;resize:vertical}
+input::placeholder,textarea::placeholder{color:var(--txt3);font-weight:600}
+input:focus,textarea:focus{border-color:var(--swx-green)}
+textarea{min-height:64px;margin-bottom:0}
+.kaca > textarea:last-child{margin-bottom:0}
+
+/* ---------- perekam ---------- */
+.rek{text-align:center}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;
+  background:var(--fill2);font-size:12px;font-weight:800;color:var(--txt2)}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--txt3);display:block}
+.chip.on{background:var(--rec-dim);color:var(--rec)}
+.chip.on i{background:var(--rec);animation:denyut 1.2s ease-in-out infinite}
+.chip.jeda{color:var(--warn)} .chip.jeda i{background:var(--warn)}
+@keyframes denyut{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
+@media (prefers-reduced-motion:reduce){.chip.on i{animation:none}}
+.waktu{margin:14px 0 4px;font:800 46px/1 'JetBrains Mono',ui-monospace,monospace;
+  letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.ukur{font-size:12px;font-weight:700;color:var(--txt3);min-height:17px}
+canvas#gelombang{display:block;width:100%;height:56px;margin:14px 0 18px}
+
+.kendali{display:flex;align-items:flex-start;justify-content:center;gap:26px}
+.btn-rek{width:84px;height:84px;border-radius:50%;cursor:pointer;position:relative;
+  border:.5px solid var(--stroke-hi);
+  background:var(--op-lapis-sm),var(--ic-kaca-bg);
+  box-shadow:var(--op-rim),var(--kaca-dalam),0 8px 22px rgba(0,0,0,.30);
+  display:grid;place-items:center;transition:transform var(--dur-tap) var(--ease-pop)}
+.btn-rek:active{transform:scale(.92)}
+.btn-rek i{display:block;width:34px;height:34px;border-radius:50%;background:var(--rec);
+  box-shadow:0 0 22px var(--rec-dim);transition:border-radius 220ms var(--ease-sheet),width 220ms,height 220ms}
+/* Saat merekam, bulatan jadi kotak — isyarat "tekan untuk berhenti" yang
+   sama dengan perekam bawaan iPhone. */
+.btn-rek.stop i{width:26px;height:26px;border-radius:7px}
+/* margin 12px atas-bawah = (84 - 60) / 2: tombol kecil jadi setinggi tombol
+   rekam, jadi label "Jeda" dan "Rekam" duduk di SATU garis. Tanpa ini label
+   tombol kecil naik 24px dan barisnya terlihat miring. */
+.btn-kecil{width:60px;height:60px;margin:12px 0;border-radius:50%;cursor:pointer;color:var(--txt);
+  border:.5px solid var(--stroke-hi);
+  background:var(--op-lapis-sm),var(--ic-kaca-bg);box-shadow:var(--op-rim),var(--kaca-dalam);
+  display:grid;place-items:center;transition:transform var(--dur-tap) var(--ease-pop)}
+.btn-kecil:active{transform:scale(.9)}
+.btn-kecil[disabled]{opacity:.35;pointer-events:none}
+.kendali small{display:block;margin-top:8px;font-size:11px;font-weight:800;color:var(--txt3);
+  letter-spacing:.04em;text-transform:uppercase}
+.kendali > div{display:flex;flex-direction:column;align-items:center}
+
+/* ---------- hasil ---------- */
+.berkas{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--fill2);margin-bottom:14px}
+.berkas b{display:block;font-size:13.5px;font-weight:800;word-break:break-all;line-height:1.3}
+.berkas span{display:block;font-size:12px;color:var(--txt3);margin-top:3px;font-weight:700}
+.berkas .ikon{width:40px;height:40px;flex:none;border-radius:11px;display:grid;place-items:center;
+  background:var(--rec-dim);color:var(--rec);font-size:18px}
+audio{width:100%;margin:0 0 14px;display:block}
+.baris-tombol{display:flex;gap:10px}
+.btn{flex:1;min-height:50px;border-radius:15px;cursor:pointer;border:.5px solid var(--stroke-hi);
+  font:800 14.5px/1 'Nunito Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;
+  color:var(--txt);background:var(--op-lapis-sm),var(--fill2);box-shadow:var(--op-rim);
+  text-decoration:none;transition:transform var(--dur-tap) var(--ease-pop),opacity var(--dur-tap)}
+.btn:active{transform:scale(.96)}
+.btn.utama{background:var(--swx-green);color:var(--on-green);border-color:transparent;box-shadow:0 8px 20px rgba(20,196,125,.22)}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btn.teks{flex:none;min-height:0;padding:10px 4px;background:none;border:0;box-shadow:none;
+  color:var(--txt3);font-size:13px;margin:12px auto 0}
+.maju{margin-top:14px}
+.maju .jalur{height:8px;border-radius:999px;background:var(--fill2);overflow:hidden}
+.maju .jalur i{display:block;height:100%;width:0;border-radius:999px;background:var(--swx-green);
+  transition:width 300ms var(--ease-sheet)}
+.maju p{margin:8px 0 0;font-size:12.5px;font-weight:700;color:var(--txt2);display:flex;justify-content:space-between;gap:10px}
+.pesan{margin-top:12px;padding:11px 12px;border-radius:12px;font-size:13px;line-height:1.45;font-weight:700}
+.pesan.ok{background:rgba(50,215,75,.14);color:var(--ok)}
+.pesan.gagal{background:var(--rec-dim);color:var(--err)}
+.pesan a{color:inherit}
+
+/* ---------- pulihkan ---------- */
+.pul{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:.5px solid var(--stroke)}
+.pul:first-of-type{border-top:0}
+.pul .nm{flex:1;min-width:0}
+.pul .nm b{display:block;font-size:13.5px;font-weight:800}
+.pul .nm span{display:block;font-size:12px;color:var(--txt3);font-weight:700;margin-top:2px}
+.pul button{border:0;border-radius:11px;padding:9px 12px;cursor:pointer;font:800 12.5px/1 'Nunito Sans',sans-serif;
+  background:var(--fill);color:var(--txt)}
+.pul button.utama{background:var(--swx-green);color:var(--on-green)}
+
+/* ---------- perekam bawaan HP ---------- */
+.hp{text-align:left}
+.hp .hp-teks{margin:0 0 16px;font-size:13.5px;line-height:1.6;color:var(--txt2)}
+.hp .hp-teks b{color:var(--txt)}
+.hp .btn{width:100%;flex:none}
+.hp .btn + .btn{margin-top:10px}
+.hp ol{margin:14px 0 0;padding-left:20px;font-size:12.5px;line-height:1.7;color:var(--txt3);font-weight:700}
+.kaki{margin-top:26px;text-align:center;font-size:11.5px;color:var(--txt3);line-height:1.7}
+.kaki a{color:var(--swx-green);font-weight:800;text-decoration:none;cursor:pointer}
+</style>
+<style>
+/* ---------- khusus halaman perekam ---------- */
+.info{display:flex;gap:10px;align-items:flex-start;padding:12px 13px;border-radius:14px;
+  background:var(--fill2);font-size:12.5px;line-height:1.5;color:var(--txt2);font-weight:700;margin-bottom:24px}
+.info b{color:var(--txt)}
+.info.gagal{background:var(--rec-dim);color:var(--err)}
+.info i{font-style:normal;flex:none}
+.nama-rapat{margin:-6px 0 14px;font-size:13px;font-weight:800;color:var(--txt2)}
+.nama-rapat b{color:var(--txt)}
+</style>
+</head>
+<body>
+<div class="wall"></div>
+<div id="bootmark"></div>
+
+<div class="app">
+  <header class="head">
+    <!-- LOGO SWIPERX RESMI — disalin apa adanya dari data-URI di top bar
+     pharmacy-procurement.swiperxapp.com. JANGAN digambar ulang.
+
+     Menjiplak dari tangkapan layar menghasilkan warna yang MELESET:
+       biru   ditiru #1733E8, aslinya #1733DE
+       ungu   ditiru #BC55C0, aslinya #C259B7
+       jingga ditiru #FA8231, aslinya #FF7F30
+     (hijau #14C47D kebetulan tepat.)
+
+     Perhatikan: biru LOGO #1733DE berbeda dari biru BADGE #1733E8 di UI.
+     Keduanya memang dua warna yang berlainan.
+
+     viewBox 50x42 -> rasionya BUKAN 1:1. Jangan dipaksa persegi.
+     Warna di sini adalah MEREK: jangan pernah diganti token tema. -->
+<svg class="swx" viewBox="0 0 50 42" fill="none" aria-hidden="true" focusable="false"><path d='M21.6882 18.954L17.3178 23.3205L12.9474 27.6909C12.3559 28.2824 11.5814 28.5782 10.8031 28.5782C10.0247 28.5782 9.25026 28.2824 8.65871 27.6909C8.06717 27.0994 7.7714 26.3249 7.7714 25.5466C7.7714 24.7721 8.06717 23.9938 8.65871 23.4022L13.0291 19.0318L17.3995 14.6614C17.9911 14.0698 18.7655 13.7741 19.5439 13.7741C20.3222 13.7741 21.0967 14.0698 21.6882 14.6614C22.2798 15.2529 22.5755 16.0274 22.5755 16.8057C22.5755 17.5841 22.2798 18.3624 21.6882 18.954Z' fill='#1733DE'/><path d='M27.8371 20.822C27.2456 20.2304 26.4711 19.9347 25.6928 19.9347C24.9183 19.9347 24.14 20.2304 23.5485 20.822L19.1819 25.1885L14.8115 29.5589C14.22 30.1505 13.9242 30.9249 13.9242 31.7033C13.9242 32.4777 14.22 33.2561 14.8115 33.8476C15.4031 34.4391 16.1775 34.7349 16.9559 34.7349C17.7342 34.7349 18.5087 34.4391 19.1002 33.8476L23.4667 29.4772L27.8371 25.1068C28.4287 24.5152 28.7245 23.7408 28.7245 22.9624C28.7245 22.1841 28.4287 21.4135 27.8371 20.822Z' fill='#C259B7'/><path d='M34.2196 27.2044C33.628 26.6129 32.8536 26.3171 32.0752 26.3171C31.3008 26.3171 30.5224 26.6129 29.9309 27.2044L25.5644 31.5748L21.194 35.9413C20.6024 36.5329 20.3066 37.3112 20.3066 38.0857C20.3066 38.8601 20.6024 39.6385 21.194 40.23C21.7855 40.8216 22.56 41.1173 23.3383 41.1173C24.1167 41.1173 24.8911 40.8216 25.4826 40.23L29.8492 35.8596L34.2196 31.4892C34.8111 30.8977 35.1069 30.1232 35.1069 29.3449C35.1069 28.5704 34.8111 27.796 34.2196 27.2044Z' fill='#FF7F30'/><path d='M23.6496 6.09957L23.6146 6.06454L23.5796 6.02952L23.0581 5.50413L22.5366 4.97875C20.1315 2.32848 16.8819 0.904108 13.574 0.744548C10.266 0.584987 6.89575 1.68245 4.24549 4.08754C1.59911 6.48874 0.174738 9.73444 0.0151775 13.0424C-0.144383 16.3504 0.953084 19.7206 3.35817 22.3709L4.07425 23.087L4.79033 23.803L4.9927 24.0054L10.7019 18.2495L16.5862 12.4042C17.2088 11.8048 18.0144 11.5091 18.8161 11.513C19.6178 11.5207 20.4195 11.8282 21.0305 12.4392L28.7712 20.1876L36.5118 27.9283C37.1306 28.5471 37.9401 28.8584 38.7534 28.8584C39.5629 28.8584 40.3763 28.5471 40.9951 27.9283C41.6139 27.3095 41.9252 26.5 41.9252 25.6866C41.9252 24.8772 41.6139 24.0638 40.9951 23.445L32.3204 14.7703L23.6496 6.09957Z' fill='#14C47D'/><path d='M46.2295 4.65963C43.7037 2.13389 40.3257 0.802923 36.9477 0.736763C33.5697 0.670604 30.1955 1.87315 27.6659 4.39888L26.9265 5.13831L26.1871 5.87774L35.426 15.1167L44.665 24.3557L45.7741 23.2465L46.8833 22.1374C49.0587 19.5961 50.0978 16.4282 49.9928 13.2954C49.8877 10.1625 48.6346 7.06471 46.2295 4.65963Z' fill='#14C47D'/></svg>
+    <div class="wm"><b>101 <em>Recorder</em></b><span>Perekam · kembali ke app untuk diunggah</span></div>
+    <button class="tombol-bulat" type="button" id="tema" onclick="tukarTema()" aria-label="Ganti mode terang / gelap">&#9789;</button>
+  </header>
+
+  <div class="info" id="info"><i>&#128274;</i><span id="infoTeks">Menyiapkan…</span></div>
+
+  <section class="kaca hide" id="kartuPulih">
+    <h2><i></i>Rekaman belum terkirim</h2>
+    <p class="sub">Tersimpan di HP ini dari sesi sebelumnya.</p>
+    <div id="daftarPulih"></div>
+  </section>
+
+  <section class="kaca rek" id="kartuRekam">
+    <p class="nama-rapat hide" id="namaRapat"></p>
+    <span class="chip" id="chip"><i></i><span id="chipTeks">Siap merekam</span></span>
+    <div class="waktu" id="waktu">00:00</div>
+    <div class="ukur" id="ukur">&nbsp;</div>
+    <canvas id="gelombang" aria-hidden="true"></canvas>
+    <div class="kendali">
+      <div><button class="btn-kecil" type="button" id="btnJeda" onclick="tekanJeda()" disabled aria-label="Jeda">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" id="ikonJeda"><rect x="6" y="5" width="4" height="14" rx="1.4"/><rect x="14" y="5" width="4" height="14" rx="1.4"/></svg>
+      </button><small id="lblJeda">Jeda</small></div>
+      <div><button class="btn-rek" type="button" id="btnRek" onclick="tekanRekam()" aria-label="Mulai merekam"><i></i></button>
+        <small id="lblRek">Rekam</small></div>
+      <div style="width:60px"></div>
+    </div>
+  </section>
+
+  <section class="kaca hide" id="kartuHasil">
+    <h2><i></i>Rekaman selesai</h2>
+    <p class="sub">Dengar ulang, lalu kirim ke app 101 Recorder — app itu yang mengunggahnya ke Drive.</p>
+    <div class="berkas">
+      <div class="ikon">&#127908;</div>
+      <div style="min-width:0"><b id="hasilJudul">—</b><span id="hasilInfo">—</span></div>
+    </div>
+    <audio id="putar" controls preload="metadata"></audio>
+    <div class="baris-tombol">
+      <button class="btn utama" type="button" id="btnKirim" onclick="kirimKeApp()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        Kirim ke app</button>
+      <button class="btn" type="button" onclick="unduh()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M6 10l6 6 6-6M4 20h16"/></svg>
+        Unduh</button>
+    </div>
+    <div class="pesan hide" id="pesan"></div>
+    <button class="btn teks" type="button" onclick="rekamBaru()">Rekam baru</button>
+  </section>
+
+  <footer class="kaki"><span>Tidak ada yang disimpan di server halaman ini.</span><br><span id="versi"></span></footer>
+</div>
+
+<script>
+var VERSI = 'Perekam HnriCode V1 · 23 SEP 2026';
+function el(id){ return document.getElementById(id); }
+
+// ================================================================ asal app
+/* Ke mana audio boleh dikirim. Asalnya datang dari app lewat ?asal=, lalu
+   DIPERIKSA: cuma bingkai Apps Script (…-script.googleusercontent.com) yang
+   diterima. Tanpa pemeriksaan ini siapa pun bisa membuka halaman ini dari
+   situsnya sendiri dan menerima rekaman rapat orang lain. Untuk uji di
+   komputer sendiri, localhost diizinkan HANYA kalau halaman ini sendiri juga
+   sedang dibuka dari localhost. */
+var Q = new URLSearchParams(location.search);
+var ASAL = (function () {
+  var a = String(Q.get('asal') || '');
+  if (/^https:\/\/[a-z0-9-]+-script\.googleusercontent\.com$/.test(a)) return a;
+  var lokal = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  if (lokal && /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(a)) return a;
+  return '';
+})();
+function adaApp(){
+  try { return !!(ASAL && window.opener && !window.opener.closed); } catch (e) { return false; }
+}
+
+// ================================================================ tema
+function bacaTema(){ try { return localStorage.getItem('rec101.tema') || 'dark'; } catch (e) { return 'dark'; } }
+function pakaiTema(t){
+  document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+  el('tema').innerHTML = t === 'light' ? '&#9728;' : '&#9789;';
+  gambarGelombang();
+}
+function tukarTema(){
+  var t = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+  try { localStorage.setItem('rec101.tema', t); } catch (e) {}
+  pakaiTema(t);
+}
+
+// ================================================================ cadangan di HP
+/* Tiap potongan 4 detik langsung ke IndexedDB. Tab yang tertutup, HP yang
+   mati, atau app yang tidak menjawab tidak boleh menghilangkan rapat yang
+   tidak bisa diulang. Dibuang HANYA sesudah app menjawab "sudah kusimpan". */
+var DB = null;
+function bukaDb(){
+  return new Promise(function (ok) {
+    if (!window.indexedDB) return ok(null);
+    var q; try { q = indexedDB.open('rec101-perekam', 1); } catch (e) { return ok(null); }
+    q.onupgradeneeded = function () {
+      var d = q.result;
+      d.createObjectStore('sesi', { keyPath: 'id' });
+      d.createObjectStore('potong', { keyPath: ['sesi', 'idx'] }).createIndex('sesi', 'sesi');
+    };
+    q.onsuccess = function () { DB = q.result; ok(DB); };
+    q.onerror = function () { ok(null); };
+  });
+}
+function dbTulis(toko, isi){
+  return new Promise(function (ok) {
+    if (!DB) return ok(false);
+    try { var t = DB.transaction(toko, 'readwrite'); t.objectStore(toko).put(isi);
+          t.oncomplete = function () { ok(true); }; t.onerror = function () { ok(false); }; }
+    catch (e) { ok(false); }
+  });
+}
+function dbSemua(toko){
+  return new Promise(function (ok) {
+    if (!DB) return ok([]);
+    var q = DB.transaction(toko).objectStore(toko).getAll();
+    q.onsuccess = function () { ok(q.result || []); }; q.onerror = function () { ok([]); };
+  });
+}
+function dbPotong(id){
+  return new Promise(function (ok) {
+    if (!DB) return ok([]);
+    var q = DB.transaction('potong').objectStore('potong').index('sesi').getAll(id);
+    q.onsuccess = function () { ok((q.result || []).sort(function (a, b) { return a.idx - b.idx; })
+                                   .map(function (x) { return x.blob; })); };
+    q.onerror = function () { ok([]); };
+  });
+}
+function dbBuang(id){
+  return new Promise(function (ok) {
+    if (!DB) return ok();
+    var t = DB.transaction(['sesi', 'potong'], 'readwrite');
+    t.objectStore('sesi').delete(id);
+    var c = t.objectStore('potong').index('sesi').openKeyCursor(IDBKeyRange.only(id));
+    c.onsuccess = function () { var k = c.result; if (k) { t.objectStore('potong').delete(k.primaryKey); k.continue(); } };
+    t.oncomplete = function () { ok(); }; t.onerror = function () { ok(); };
+  });
+}
+
+// ================================================================ merekam
+var REK = null, HASIL = null, AUDIOCTX = null;
+
+function jenisDidukung(){
+  /* Chrome & Android membuat webm/Opus, Safari iPhone cuma mp4. App di sisi
+     lain menerima keduanya (audio/webm, audio/mp4, audio/ogg). */
+  var calon = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4;codecs=mp4a.40.2', 'audio/mp4', 'audio/ogg;codecs=opus'];
+  if (!window.MediaRecorder) return '';
+  for (var i = 0; i < calon.length; i++) {
+    if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(calon[i])) return calon[i];
+  }
+  return '';
+}
+
+function tekanRekam(){
+  if (REK) { selesai(); return; }
+  if (HASIL && !HASIL.terkirim && !confirm('Rekaman sebelumnya belum dikirim ke app. Tetap mulai rekaman baru? Yang lama tetap tersimpan di HP ini.')) return;
+  /* AudioContext dibuat DI DALAM ketukan: Safari iPhone menahan audio yang
+     dimulai di luar sentuhan, dan gelombangnya jadi rata padahal rekaman
+     jalan — orang lalu mengira mikrofonnya mati. */
+  try {
+    var Ctx = window.AudioContext || window.webkitAudioContext;
+    if (Ctx) { AUDIOCTX = AUDIOCTX || new Ctx(); if (AUDIOCTX.resume) AUDIOCTX.resume(); }
+  } catch (e) { AUDIOCTX = null; }
+  mulai();
+}
+
+function mulai(){
+  var jenis = jenisDidukung();
+  if (!jenis || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    info('gagal', 'Browser ini tidak bisa merekam. Buka dengan <b>Chrome</b> (Android/PC) atau <b>Safari</b> (iPhone).');
+    return;
+  }
+  navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } })
+  .then(function (stream) {
+    var r;
+    try { r = new MediaRecorder(stream, { mimeType: jenis, audioBitsPerSecond: 32000 }); }
+    catch (e) { r = new MediaRecorder(stream); jenis = r.mimeType || jenis; }
+    REK = { r: r, stream: stream, jenis: jenis, mulai: Date.now(), idx: 0, potong: [], ms: 0,
+            sejak: Date.now(), jeda: false, id: 'p' + Date.now().toString(36) };
+    dbTulis('sesi', { id: REK.id, mulai: REK.mulai, jenis: jenis, durasi: 0, status: 'rekam', dengan: DENGAN });
+    r.ondataavailable = function (e) {
+      if (!e.data || !e.data.size || !REK) return;
+      REK.potong.push(e.data);
+      dbTulis('potong', { sesi: REK.id, idx: REK.idx++, blob: e.data });
+      dbTulis('sesi', { id: REK.id, mulai: REK.mulai, jenis: REK.jenis, durasi: detikRekam(), status: 'rekam', dengan: DENGAN });
+      el('ukur').textContent = mb(ukuranRek()) + ' · tersimpan di HP';
+    };
+    r.onstop = selesaiSungguh;
+    r.start(4000);
+    pasangMeter(stream);
+    kunciLayar(true);
+    HASIL = null;
+    el('kartuHasil').classList.add('hide');
+    paintKendali();
+    detak();
+    info('', 'Sedang merekam. <b>Biarkan layar menyala</b> dan halaman ini tetap terbuka — layar yang terkunci bisa menghentikan mikrofon.');
+  })
+  .catch(function (e) {
+    var n = e && e.name;
+    info('gagal', n === 'NotAllowedError'
+      ? 'Izin mikrofon ditolak. Ketuk ikon <b>aA</b> / gembok di kolom alamat → izinkan <b>Mikrofon</b>, lalu tekan Rekam lagi.'
+      : n === 'NotFoundError' ? 'Tidak ada mikrofon di perangkat ini.'
+      : 'Mikrofon tidak bisa dibuka: ' + esc(e && e.message || e));
+  });
+}
+
+function ukuranRek(){ return REK ? REK.potong.reduce(function (a, b) { return a + b.size; }, 0) : 0; }
+function detikRekam(){ return REK ? (REK.ms + (REK.jeda ? 0 : Date.now() - REK.sejak)) / 1000 : 0; }
+
+function tekanJeda(){
+  if (!REK) return;
+  if (!REK.jeda) { REK.r.pause(); REK.ms += Date.now() - REK.sejak; REK.jeda = true; }
+  else { REK.r.resume(); REK.sejak = Date.now(); REK.jeda = false; }
+  paintKendali();
+}
+function selesai(){
+  if (!REK) return;
+  if (!REK.jeda) { REK.ms += Date.now() - REK.sejak; REK.sejak = Date.now(); }
+  REK.jeda = true;
+  try { REK.r.stop(); } catch (e) { selesaiSungguh(); }
+}
+function selesaiSungguh(){
+  if (!REK) return;
+  var x = REK; REK = null;
+  x.stream.getTracks().forEach(function (t) { t.stop(); });
+  lepasMeter(); kunciLayar(false);
+  var jenis = x.jenis.split(';')[0];
+  HASIL = { id: x.id, blob: new Blob(x.potong, { type: jenis }), jenis: jenis, mulai: x.mulai, durasi: x.ms / 1000 };
+  dbTulis('sesi', { id: x.id, mulai: x.mulai, jenis: x.jenis, durasi: HASIL.durasi, status: 'siap', dengan: DENGAN });
+  paintKendali();
+  tampilHasil();
+}
+
+var jamTimer = null;
+function detak(){
+  clearInterval(jamTimer);
+  jamTimer = setInterval(function () { if (!REK) { clearInterval(jamTimer); return; } el('waktu').textContent = format(detikRekam()); }, 250);
+}
+function format(d){
+  d = Math.max(0, Math.floor(d));
+  var j = Math.floor(d / 3600), m = Math.floor(d % 3600 / 60), s = d % 60, dd = function (n) { return (n < 10 ? '0' : '') + n; };
+  return (j ? j + ':' + dd(m) : dd(m)) + ':' + dd(s);
+}
+function mb(b){
+  if (b < 1048576) return Math.max(1, Math.round(b / 1024)) + ' KB';
+  return (b / 1048576).toFixed(b < 10485760 ? 1 : 0).replace('.', ',') + ' MB';
+}
+function paintKendali(){
+  var on = !!REK, jeda = on && REK.jeda;
+  el('btnRek').classList.toggle('stop', on);
+  el('btnRek').setAttribute('aria-label', on ? 'Selesai merekam' : 'Mulai merekam');
+  el('lblRek').textContent = on ? 'Selesai' : 'Rekam';
+  el('btnJeda').disabled = !on;
+  el('lblJeda').textContent = jeda ? 'Lanjut' : 'Jeda';
+  el('ikonJeda').innerHTML = jeda
+    ? '<path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/>'
+    : '<rect x="6" y="5" width="4" height="14" rx="1.4"/><rect x="14" y="5" width="4" height="14" rx="1.4"/>';
+  el('chip').className = 'chip' + (on ? (jeda ? ' jeda' : ' on') : '');
+  el('chipTeks').textContent = on ? (jeda ? 'Dijeda' : 'Merekam') : (HASIL ? 'Selesai' : 'Siap merekam');
+  if (!on && !HASIL) { el('waktu').textContent = '00:00'; el('ukur').innerHTML = '&nbsp;'; }
+}
+
+var KUNCI = null;
+function kunciLayar(on){
+  if (!on) { try { if (KUNCI) KUNCI.release(); } catch (e) {} KUNCI = null; return; }
+  if (!('wakeLock' in navigator)) return;
+  navigator.wakeLock.request('screen').then(function (k) { KUNCI = k; }).catch(function () {});
+}
+document.addEventListener('visibilitychange', function () { if (REK && document.visibilityState === 'visible') kunciLayar(true); });
+window.addEventListener('beforeunload', function (e) {
+  if (REK) { e.preventDefault(); e.returnValue = 'Rekaman sedang berjalan.'; return e.returnValue; }
+});
+
+var METER = null, SEJARAH = [];
+function pasangMeter(stream){
+  try {
+    var ctx = AUDIOCTX; if (!ctx) return;
+    if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
+    var src = ctx.createMediaStreamSource(stream), an = ctx.createAnalyser();
+    an.fftSize = 1024; src.connect(an);
+    METER = { src: src, an: an, buf: new Uint8Array(an.fftSize), raf: 0, t: 0 };
+    SEJARAH = [];
+    var langkah = function (ts) {
+      if (!METER) return;
+      if (ts - METER.t > 70) {
+        METER.t = ts; METER.an.getByteTimeDomainData(METER.buf);
+        var s = 0; for (var i = 0; i < METER.buf.length; i++) { var v = (METER.buf[i] - 128) / 128; s += v * v; }
+        SEJARAH.push(REK && REK.jeda ? 0 : Math.min(1, Math.sqrt(s / METER.buf.length) * 4.2));
+        if (SEJARAH.length > 120) SEJARAH.shift();
+        gambarGelombang();
+      }
+      METER.raf = requestAnimationFrame(langkah);
+    };
+    METER.raf = requestAnimationFrame(langkah);
+  } catch (e) { METER = null; }
+}
+function lepasMeter(){
+  if (!METER) return;
+  cancelAnimationFrame(METER.raf);
+  try { METER.src.disconnect(); } catch (e) {}
+  METER = null;
+}
+function gambarGelombang(){
+  var c = el('gelombang'); if (!c) return;
+  var dpr = window.devicePixelRatio || 1, w = c.clientWidth, h = c.clientHeight;
+  if (c.width !== Math.round(w * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
+  var g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  var st = getComputedStyle(document.documentElement);
+  g.fillStyle = ((REK && !REK.jeda) ? st.getPropertyValue('--swx-green') : st.getPropertyValue('--txt3')).trim() || '#14C47D';
+  var lebar = 3, sela = 2, n = Math.floor(w / (lebar + sela));
+  for (var i = 0; i < n; i++) {
+    var v = SEJARAH[SEJARAH.length - n + i], tinggi = Math.max(3, (v || 0) * h);
+    g.globalAlpha = v === undefined ? .25 : 1;
+    g.beginPath();
+    if (g.roundRect) g.roundRect(i * (lebar + sela), (h - tinggi) / 2, lebar, tinggi, 1.5);
+    else g.rect(i * (lebar + sela), (h - tinggi) / 2, lebar, tinggi);
+    g.fill();
+  }
+  g.globalAlpha = 1;
+}
+
+// ================================================================ hasil & kirim
+var URLPUTAR = '';
+function tampilHasil(){
+  el('kartuHasil').classList.remove('hide');
+  el('hasilJudul').textContent = '101' + (HASIL.dengan || DENGAN ? ' dengan ' + (HASIL.dengan || DENGAN) : '');
+  el('hasilInfo').textContent = format(HASIL.durasi) + ' · ' + mb(HASIL.blob.size) + ' · ' +
+    new Date(HASIL.mulai).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+  if (URLPUTAR) URL.revokeObjectURL(URLPUTAR);
+  URLPUTAR = URL.createObjectURL(HASIL.blob);
+  el('putar').src = URLPUTAR;
+  el('waktu').textContent = format(HASIL.durasi);
+  el('ukur').textContent = mb(HASIL.blob.size);
+  el('btnKirim').disabled = !adaApp();
+  el('pesan').className = 'pesan hide';
+  if (!adaApp()) pesan('gagal', 'Halaman ini tidak dibuka dari app 101 Recorder, jadi rekaman tidak bisa dikirim ke sana. ' +
+    'Tekan <b>Unduh</b> untuk menyimpannya.');
+  el('kartuHasil').scrollIntoView({ behavior: 'auto', block: 'start' });
+}
+function pesan(jenis, html){ var p = el('pesan'); p.className = 'pesan ' + jenis; p.innerHTML = html; }
+
+/* Kirim ke app, lalu TUNGGU jawabannya. Cadangan di HP baru dibuang kalau app
+   menjawab bahwa rekamannya sudah IA simpan sendiri (aman: true) — kalau app
+   tidak bisa menyimpan (mode privat, IndexedDB mati), cadangan tetap di sini
+   sampai benar-benar terunggah atau diunduh. */
+var MENUNGGU = null;
+function kirimKeApp(){
+  if (!HASIL || !adaApp()) return;
+  el('btnKirim').disabled = true;
+  pesan('ok', 'Mengirim ke app…');
+  var h = HASIL;
+  MENUNGGU = { id: h.id, t: setTimeout(function () {
+    MENUNGGU = null; el('btnKirim').disabled = false;
+    pesan('gagal', 'App tidak menjawab. Rekaman <b>tetap aman di HP ini</b> — pastikan tab 101 Recorder masih terbuka, lalu coba lagi, atau tekan <b>Unduh</b>.');
+  }, 8000) };
+  try {
+    window.opener.postMessage({ tipe: 'rec101', id: h.id, blob: h.blob, jenis: h.jenis,
+      mulai: h.mulai, durasi: h.durasi, dengan: h.dengan || DENGAN }, ASAL);
+  } catch (e) {
+    clearTimeout(MENUNGGU.t); MENUNGGU = null; el('btnKirim').disabled = false;
+    pesan('gagal', 'Gagal mengirim: ' + esc(e.message) + '. Tekan <b>Unduh</b> untuk menyimpan rekamannya.');
+  }
+}
+window.addEventListener('message', function (e) {
+  if (e.origin !== ASAL || !e.data || e.data.tipe !== 'rec101-diterima') return;
+  if (!MENUNGGU || e.data.id !== MENUNGGU.id) return;
+  clearTimeout(MENUNGGU.t);
+  var id = MENUNGGU.id; MENUNGGU = null;
+  if (HASIL && HASIL.id === id) HASIL.terkirim = true;
+  var sesudah = e.data.aman ? dbBuang(id) : Promise.resolve();
+  sesudah.then(function () {
+    pesan('ok', '&#10003; Terkirim. Kembali ke tab <b>101 Recorder</b> untuk mengunggahnya ke Drive.' +
+      (e.data.aman ? '' : '<br>Cadangan tetap disimpan di HP ini sampai kamu membuangnya.'));
+    cekPulih();
+    /* Tutup sendiri — di HP itu mengembalikan orang ke tab app. Browser boleh
+       menolaknya; kalimat di atas sudah menjelaskan langkahnya. */
+    setTimeout(function () { try { window.close(); } catch (x) {} }, 1200);
+  });
+});
+
+function unduh(){
+  if (!HASIL) return;
+  var t = new Date(HASIL.mulai), dd = function (n) { return (n < 10 ? '0' : '') + n; };
+  var nm = (HASIL.dengan || DENGAN || 'Rapat').replace(/[^A-Za-z0-9 ]+/g, ' ').trim().split(/\s+/)
+    .map(function (w) { return w ? w.charAt(0).toUpperCase() + w.slice(1) : ''; }).join('').slice(0, 40) || 'Rapat';
+  var ext = { 'audio/webm': 'webm', 'audio/mp4': 'm4a', 'audio/ogg': 'ogg' }[HASIL.jenis] || 'webm';
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(HASIL.blob);
+  a.download = '101_' + nm + '_' + t.getFullYear() + '-' + dd(t.getMonth() + 1) + '-' + dd(t.getDate()) + '_' + dd(t.getHours()) + dd(t.getMinutes()) + '.' + ext;
+  document.body.appendChild(a); a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+}
+function rekamBaru(){
+  if (HASIL && !HASIL.terkirim && !confirm('Rekaman ini belum dikirim ke app. Tetap simpan di HP ini dan mulai rekaman baru?')) return;
+  HASIL = null; el('kartuHasil').classList.add('hide'); SEJARAH = []; gambarGelombang(); paintKendali(); cekPulih(); window.scrollTo(0, 0);
+}
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+// ================================================================ pulihkan
+function cekPulih(){
+  return dbSemua('sesi').then(function (ss) {
+    ss = ss.filter(function (s) { return !(HASIL && HASIL.id === s.id) && !(REK && REK.id === s.id); })
+           .sort(function (a, b) { return b.mulai - a.mulai; });
+    if (!ss.length) { el('kartuPulih').classList.add('hide'); el('daftarPulih').innerHTML = ''; return; }
+    el('kartuPulih').classList.remove('hide');
+    el('daftarPulih').innerHTML = ss.map(function (s) {
+      return '<div class="pul"><div class="nm"><b>' + esc(new Date(s.mulai).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })) +
+        '</b><span>' + format(s.durasi || 0) + (s.dengan ? ' · ' + esc(s.dengan) : '') +
+        (s.status === 'rekam' ? ' · terputus saat merekam' : '') + '</span></div>' +
+        '<button type="button" class="utama" onclick="pulihkan(\'' + esc(s.id) + '\')">Buka</button>' +
+        '<button type="button" onclick="buangPulih(\'' + esc(s.id) + '\')">Buang</button></div>';
+    }).join('');
+  });
+}
+function pulihkan(id){
+  if (REK) return;
+  dbSemua('sesi').then(function (ss) {
+    var s = ss.filter(function (x) { return x.id === id; })[0]; if (!s) return;
+    return dbPotong(id).then(function (bl) {
+      if (!bl.length) { alert('Isi rekaman ini tidak ada di HP.'); return dbBuang(id).then(cekPulih); }
+      var jenis = String(s.jenis || 'audio/webm').split(';')[0];
+      HASIL = { id: id, blob: new Blob(bl, { type: jenis }), jenis: jenis, mulai: s.mulai, durasi: s.durasi || 0, dengan: s.dengan || '' };
+      paintKendali(); tampilHasil(); cekPulih();
+    });
+  });
+}
+function buangPulih(id){
+  if (!confirm('Buang rekaman ini dari HP? Kalau belum pernah dikirim atau diunduh, rekaman ini hilang selamanya.')) return;
+  dbBuang(id).then(cekPulih);
+}
+
+// ================================================================ info
+function info(jenis, html){ el('info').className = 'info' + (jenis ? ' ' + jenis : ''); el('infoTeks').innerHTML = html; }
+
+// ================================================================ mulai
+var DENGAN = String(Q.get('dengan') || '').slice(0, 60);
+pakaiTema(bacaTema());
+el('versi').textContent = VERSI;
+if (DENGAN) { el('namaRapat').classList.remove('hide'); el('namaRapat').innerHTML = '101 dengan <b>' + esc(DENGAN) + '</b>'; }
+info(adaApp() ? '' : 'gagal', adaApp()
+  ? 'Tekan tombol merah untuk mulai. Browser akan minta izin <b>mikrofon</b> — pilih <b>Izinkan</b>. Selesai merekam, tekan <b>Kirim ke app</b>.'
+  : 'Buka perekam ini dari app <b>101 Recorder</b> supaya rekamannya bisa dikirim ke Drive. Dibuka langsung seperti ini, rekaman cuma bisa <b>diunduh</b>.');
+window.addEventListener('resize', gambarGelombang);
+bukaDb().then(cekPulih);
+gambarGelombang();
+</script>
+</body>
+</html>

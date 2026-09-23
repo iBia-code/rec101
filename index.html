@@ -474,6 +474,109 @@ audio{width:100%;margin:0 0 14px;display:block}
 .info i{font-style:normal;flex:none}
 .nama-rapat{margin:-6px 0 14px;font-size:13px;font-weight:800;color:var(--txt2)}
 .nama-rapat b{color:var(--txt)}
+/* Bilah atas (☰ + tema) lalu judul besar — sama dengan app 101 Recorder V6. */
+.bilah{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 0 14px}
+.head{padding-top:0}
+/* LACI-EJB:CSS:MULAI — DIBANGKITKAN scripts/sinkron-menu.py dari scripts/laci-ejb.css. */
+/* LACI MENU EJB — gaya. Disalin oleh scripts/sinkron-menu.py; sumbernya
+   scripts/laci-ejb.css. Semua token ber-awalan --lc- dan dideklarasikan PADA
+   .lc-laci, bukan :root — jadi tidak mungkin bertabrakan dengan token app mana
+   pun (jebakan "token dua kali": yang belakangan menang, nol error). Nilai
+   kacanya diambil skrip dari skill henri-glassy-mode (tokens.css +
+   tokens-tipis.css), lalu diganti nama. */
+.lc-laci, .lc-tabir{
+  --lc-body:linear-gradient(159deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,.03) 9%, rgba(255,255,255,0) 22%), radial-gradient(140% 54% at 50% -30%, rgba(196,214,255,.09) 0%, transparent 48%), radial-gradient(118% 108% at 50% 58%, rgba(0,0,0,.09) 0%, rgba(0,0,0,.06) 58%, rgba(0,0,0,.02) 86%, transparent 100%), linear-gradient(180deg, rgba(255,255,255,.05) 0%, transparent 100%);
+  --lc-dalam:inset 0 0 0 1px rgba(0,0,0,.30);
+  --lc-bg:rgba(14,16,21,.30);
+  --lc-bf:blur(13px) saturate(195%);
+  --lc-iris:radial-gradient(60% 3px at 28% 0%, rgba(255,176,220,.62), transparent 100%), radial-gradient(52% 3px at 80% 0%, rgba(255,222,168,.52), transparent 100%), radial-gradient(3px 58% at 0% 40%, rgba(168,214,255,.55), transparent 100%), radial-gradient(3px 54% at 100% 58%, rgba(176,196,255,.48), transparent 100%), radial-gradient(52% 3px at 64% 100%, rgba(150,240,200,.48), transparent 100%);
+  --lc-cekung:linear-gradient(to bottom, rgba(0,0,0,.72) 0, rgba(0,0,0,.20) 1.5px, rgba(0,0,0,0) 3px), linear-gradient(to top, rgba(0,0,0,.45) 0, rgba(0,0,0,0) 2px), linear-gradient(to right, rgba(0,0,0,.55) 0, rgba(0,0,0,0) 2px), linear-gradient(to left, rgba(0,0,0,.55) 0, rgba(0,0,0,0) 2px);
+  --lc-rim:inset 0 0 0 1px rgba(255,255,255,.16), inset 0 1px 0 rgba(255,255,255,.34);
+  --lc-lift:0 -1px 0 rgba(255,255,255,.04);
+  --lc-lapis:var(--lc-iris), var(--lc-cekung), radial-gradient(120% 36% at 50% -16%, rgba(255,255,255,.12), transparent 70%), var(--lc-body);
+  --lc-lapis-sm:var(--lc-iris), var(--lc-cekung), radial-gradient(120% 32% at 50% -14%, rgba(255,255,255,.10), transparent 66%), var(--lc-body);
+  --lc-txt:#FFF; --lc-txt2:rgba(255,255,255,.72); --lc-txt3:rgba(255,255,255,.55);
+  --lc-stroke:rgba(255,255,255,.12); --lc-stroke-hi:rgba(255,255,255,.20);
+  --lc-fill:rgba(120,120,128,.20); --lc-hijau:#14C47D; --lc-hijau-bg:rgba(20,196,125,.16);
+  --lc-ease:cubic-bezier(.32,.72,0,1);
+}
+/* Terang: dua cara app menandainya — data-theme (EJB OS, Daily, GPS, Opella,
+   Recorder) dan body.light (Cockpit). */
+:root[data-theme="light"] .lc-laci, body.light .lc-laci{
+  --lc-body:linear-gradient(159deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,.03) 24%, transparent 52%);
+  --lc-dalam:inset 0 0 0 1px rgba(16,24,40,.06);
+  --lc-bg:rgba(255,255,255,.20);
+  --lc-bf:blur(10px) saturate(145%);
+  --lc-iris:radial-gradient(60% 3px at 28% 0%, rgba(216,120,176,.46), transparent 100%), radial-gradient(52% 3px at 80% 0%, rgba(214,166,96,.40), transparent 100%), radial-gradient(3px 58% at 0% 40%, rgba(86,150,214,.44), transparent 100%), radial-gradient(3px 54% at 100% 58%, rgba(104,130,214,.38), transparent 100%), radial-gradient(52% 3px at 64% 100%, rgba(52,178,132,.38), transparent 100%);
+  --lc-cekung:linear-gradient(to bottom, rgba(22,32,54,.20) 0, rgba(22,32,54,.05) 1.5px, rgba(22,32,54,0) 3px), linear-gradient(to top, rgba(22,32,54,.12) 0, rgba(22,32,54,0) 2px), linear-gradient(to right, rgba(22,32,54,.14) 0, rgba(22,32,54,0) 2px), linear-gradient(to left, rgba(22,32,54,.14) 0, rgba(22,32,54,0) 2px);
+  --lc-rim:inset 0 0 0 1px rgba(255,255,255,.95), inset 0 1px 0 rgba(255,255,255,1), 0 0 0 1px rgba(16,24,40,.08);
+  --lc-lift:0 0 0 0 transparent;
+  --lc-lapis:var(--lc-iris), var(--lc-cekung), radial-gradient(120% 36% at 50% -16%, rgba(255,255,255,.55), transparent 70%), var(--lc-body);
+  --lc-lapis-sm:var(--lc-iris), var(--lc-cekung), radial-gradient(120% 32% at 50% -14%, rgba(255,255,255,.50), transparent 66%), var(--lc-body);
+  --lc-txt:#05070A; --lc-txt2:rgba(6,9,14,.88); --lc-txt3:rgba(6,9,14,.74);
+  --lc-stroke:rgba(0,0,0,.16); --lc-stroke-hi:rgba(0,0,0,.12);
+  --lc-fill:rgba(118,118,128,.12); --lc-hijau:#0E9E63; --lc-hijau-bg:rgba(14,158,99,.12);
+}
+/* GPS & SCAN Camera mengikuti tema SISTEM kalau belum dipilih manual. */
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]) .lc-laci.lc-sistem{
+  --lc-body:linear-gradient(159deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,.03) 24%, transparent 52%);
+  --lc-dalam:inset 0 0 0 1px rgba(16,24,40,.06);
+  --lc-bg:rgba(255,255,255,.20);
+  --lc-bf:blur(10px) saturate(145%);
+  --lc-iris:radial-gradient(60% 3px at 28% 0%, rgba(216,120,176,.46), transparent 100%), radial-gradient(52% 3px at 80% 0%, rgba(214,166,96,.40), transparent 100%), radial-gradient(3px 58% at 0% 40%, rgba(86,150,214,.44), transparent 100%), radial-gradient(3px 54% at 100% 58%, rgba(104,130,214,.38), transparent 100%), radial-gradient(52% 3px at 64% 100%, rgba(52,178,132,.38), transparent 100%);
+  --lc-cekung:linear-gradient(to bottom, rgba(22,32,54,.20) 0, rgba(22,32,54,.05) 1.5px, rgba(22,32,54,0) 3px), linear-gradient(to top, rgba(22,32,54,.12) 0, rgba(22,32,54,0) 2px), linear-gradient(to right, rgba(22,32,54,.14) 0, rgba(22,32,54,0) 2px), linear-gradient(to left, rgba(22,32,54,.14) 0, rgba(22,32,54,0) 2px);
+  --lc-rim:inset 0 0 0 1px rgba(255,255,255,.95), inset 0 1px 0 rgba(255,255,255,1), 0 0 0 1px rgba(16,24,40,.08);
+  --lc-lift:0 0 0 0 transparent;
+  --lc-lapis:var(--lc-iris), var(--lc-cekung), radial-gradient(120% 36% at 50% -16%, rgba(255,255,255,.55), transparent 70%), var(--lc-body);
+  --lc-lapis-sm:var(--lc-iris), var(--lc-cekung), radial-gradient(120% 32% at 50% -14%, rgba(255,255,255,.50), transparent 66%), var(--lc-body);
+    --lc-txt:#05070A; --lc-txt2:rgba(6,9,14,.88); --lc-txt3:rgba(6,9,14,.74);
+    --lc-stroke:rgba(0,0,0,.16); --lc-stroke-hi:rgba(0,0,0,.12);
+    --lc-fill:rgba(118,118,128,.12); --lc-hijau:#0E9E63; --lc-hijau-bg:rgba(14,158,99,.12);
+  }
+}
+.lc-tabir{position:fixed;inset:0;z-index:2147482000;background:rgba(0,0,0,.34);opacity:0;
+  pointer-events:none;transition:opacity 260ms linear}
+.lc-buka .lc-tabir{opacity:1;pointer-events:auto}
+.lc-buka body{overflow:hidden}
+.lc-laci{position:fixed;left:0;top:0;bottom:0;z-index:2147482001;width:min(84vw,320px);box-sizing:border-box;
+  display:flex;flex-direction:column;color:var(--lc-txt);
+  padding:calc(14px + env(safe-area-inset-top,0px)) 10px calc(12px + env(safe-area-inset-bottom,0px));
+  border-radius:0 26px 26px 0;border:.5px solid var(--lc-stroke-hi);border-left:0;
+  background:var(--lc-lapis),var(--lc-bg);
+  box-shadow:var(--lc-lift),var(--lc-rim),var(--lc-dalam),18px 0 44px rgba(0,0,0,.34);
+  -webkit-backdrop-filter:var(--lc-bf);backdrop-filter:var(--lc-bf);
+  font:400 14px/1.3 'Nunito Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  transform:translateX(-106%);visibility:hidden;
+  transition:transform 320ms var(--lc-ease),visibility 0s linear 320ms}
+.lc-buka .lc-laci{transform:none;visibility:visible;transition:transform 320ms var(--lc-ease)}
+@media (prefers-reduced-motion:reduce){.lc-laci,.lc-tabir{transition:none}}
+.lc-laci *{box-sizing:border-box}
+.lc-profil{display:flex;align-items:center;gap:10px;padding:6px 8px 14px;border-bottom:.5px solid var(--lc-stroke)}
+.lc-ava{width:38px;height:38px;flex:none;border-radius:50%;display:grid;place-items:center;
+  background:linear-gradient(135deg,#8c7cff,#4ec9e0);color:#fff;font:900 13px/1 'Nunito Sans',sans-serif}
+.lc-pt{min-width:0}
+.lc-pt b{display:block;font-size:14px;font-weight:900;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lc-pt > span{display:block;font-size:11.5px;color:var(--lc-txt3);font-weight:700;margin-top:1px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lc-daftar{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 4px 4px;margin:0 -4px}
+.lc-grup{font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--lc-txt3);margin:14px 10px 5px}
+.lc-item{display:flex;align-items:center;gap:12px;width:100%;min-height:44px;padding:0 10px;border:0;
+  border-radius:13px;background:none;color:var(--lc-txt2);text-decoration:none;cursor:pointer;
+  font:800 14px/1.2 'Nunito Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+  transition:background 140ms linear,transform 140ms cubic-bezier(.2,.9,.3,1.3)}
+.lc-item svg{width:20px;height:20px;flex:none}
+/* display:block + anak LANGSUNG: <span> inline mengabaikan ukuran, dan aturan
+   keturunan menelan span lain di dalamnya (dua pelajaran CLAUDE.md, dijaga
+   audit Opella Push). */
+.lc-item > span{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lc-item:active{transform:scale(.97);background:var(--lc-fill)}
+.lc-item.lc-aktif{color:var(--lc-txt);background:var(--lc-lapis-sm),var(--lc-hijau-bg);
+  box-shadow:inset 0 0 0 1px var(--lc-hijau)}
+.lc-item.lc-aktif svg{color:var(--lc-hijau)}
+.lc-home{color:var(--lc-txt);margin-top:8px}
+.lc-kaki{padding:10px 10px 0;border-top:.5px solid var(--lc-stroke);font-size:10.5px;color:var(--lc-txt3)}
+/* LACI-EJB:CSS:SELESAI */
 </style>
 </head>
 <body>
@@ -481,6 +584,15 @@ audio{width:100%;margin:0 0 14px;display:block}
 <div id="bootmark"></div>
 
 <div class="app">
+  <nav class="bilah">
+    <!-- Laci menu (☰): semua menu EJB, sama dengan app lain. -->
+    <button class="tombol-bulat" type="button" id="btnLaci" onclick="laciBuka()" aria-label="Menu semua app EJB"
+            aria-controls="lcLaci" aria-expanded="false">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+           stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+    </button>
+    <button class="tombol-bulat" type="button" id="tema" onclick="tukarTema()" aria-label="Ganti mode terang / gelap">&#9789;</button>
+  </nav>
   <header class="head">
     <!-- LOGO SWIPERX RESMI — disalin apa adanya dari data-URI di top bar
      pharmacy-procurement.swiperxapp.com. JANGAN digambar ulang.
@@ -498,7 +610,6 @@ audio{width:100%;margin:0 0 14px;display:block}
      Warna di sini adalah MEREK: jangan pernah diganti token tema. -->
 <svg class="swx" viewBox="0 0 50 42" fill="none" aria-hidden="true" focusable="false"><path d='M21.6882 18.954L17.3178 23.3205L12.9474 27.6909C12.3559 28.2824 11.5814 28.5782 10.8031 28.5782C10.0247 28.5782 9.25026 28.2824 8.65871 27.6909C8.06717 27.0994 7.7714 26.3249 7.7714 25.5466C7.7714 24.7721 8.06717 23.9938 8.65871 23.4022L13.0291 19.0318L17.3995 14.6614C17.9911 14.0698 18.7655 13.7741 19.5439 13.7741C20.3222 13.7741 21.0967 14.0698 21.6882 14.6614C22.2798 15.2529 22.5755 16.0274 22.5755 16.8057C22.5755 17.5841 22.2798 18.3624 21.6882 18.954Z' fill='#1733DE'/><path d='M27.8371 20.822C27.2456 20.2304 26.4711 19.9347 25.6928 19.9347C24.9183 19.9347 24.14 20.2304 23.5485 20.822L19.1819 25.1885L14.8115 29.5589C14.22 30.1505 13.9242 30.9249 13.9242 31.7033C13.9242 32.4777 14.22 33.2561 14.8115 33.8476C15.4031 34.4391 16.1775 34.7349 16.9559 34.7349C17.7342 34.7349 18.5087 34.4391 19.1002 33.8476L23.4667 29.4772L27.8371 25.1068C28.4287 24.5152 28.7245 23.7408 28.7245 22.9624C28.7245 22.1841 28.4287 21.4135 27.8371 20.822Z' fill='#C259B7'/><path d='M34.2196 27.2044C33.628 26.6129 32.8536 26.3171 32.0752 26.3171C31.3008 26.3171 30.5224 26.6129 29.9309 27.2044L25.5644 31.5748L21.194 35.9413C20.6024 36.5329 20.3066 37.3112 20.3066 38.0857C20.3066 38.8601 20.6024 39.6385 21.194 40.23C21.7855 40.8216 22.56 41.1173 23.3383 41.1173C24.1167 41.1173 24.8911 40.8216 25.4826 40.23L29.8492 35.8596L34.2196 31.4892C34.8111 30.8977 35.1069 30.1232 35.1069 29.3449C35.1069 28.5704 34.8111 27.796 34.2196 27.2044Z' fill='#FF7F30'/><path d='M23.6496 6.09957L23.6146 6.06454L23.5796 6.02952L23.0581 5.50413L22.5366 4.97875C20.1315 2.32848 16.8819 0.904108 13.574 0.744548C10.266 0.584987 6.89575 1.68245 4.24549 4.08754C1.59911 6.48874 0.174738 9.73444 0.0151775 13.0424C-0.144383 16.3504 0.953084 19.7206 3.35817 22.3709L4.07425 23.087L4.79033 23.803L4.9927 24.0054L10.7019 18.2495L16.5862 12.4042C17.2088 11.8048 18.0144 11.5091 18.8161 11.513C19.6178 11.5207 20.4195 11.8282 21.0305 12.4392L28.7712 20.1876L36.5118 27.9283C37.1306 28.5471 37.9401 28.8584 38.7534 28.8584C39.5629 28.8584 40.3763 28.5471 40.9951 27.9283C41.6139 27.3095 41.9252 26.5 41.9252 25.6866C41.9252 24.8772 41.6139 24.0638 40.9951 23.445L32.3204 14.7703L23.6496 6.09957Z' fill='#14C47D'/><path d='M46.2295 4.65963C43.7037 2.13389 40.3257 0.802923 36.9477 0.736763C33.5697 0.670604 30.1955 1.87315 27.6659 4.39888L26.9265 5.13831L26.1871 5.87774L35.426 15.1167L44.665 24.3557L45.7741 23.2465L46.8833 22.1374C49.0587 19.5961 50.0978 16.4282 49.9928 13.2954C49.8877 10.1625 48.6346 7.06471 46.2295 4.65963Z' fill='#14C47D'/></svg>
     <div class="wm"><b>101 <em>Recorder</em></b><span>Perekam · kembali ke app untuk diunggah</span></div>
-    <button class="tombol-bulat" type="button" id="tema" onclick="tukarTema()" aria-label="Ganti mode terang / gelap">&#9789;</button>
   </header>
 
   <div class="info" id="info"><i>&#128274;</i><span id="infoTeks">Menyiapkan…</span></div>
@@ -549,7 +660,7 @@ audio{width:100%;margin:0 0 14px;display:block}
 </div>
 
 <script>
-var VERSI = 'Perekam HnriCode V1 · 23 SEP 2026';
+var VERSI = 'Perekam HnriCode V2 · 23 SEP 2026';
 function el(id){ return document.getElementById(id); }
 
 // ================================================================ asal app
@@ -931,6 +1042,150 @@ function buangPulih(id){
 
 // ================================================================ info
 function info(jenis, html){ el('info').className = 'info' + (jenis ? ' ' + jenis : ''); el('infoTeks').innerHTML = html; }
+
+/* MENU-EJB:MULAI — DIBANGKITKAN scripts/sinkron-menu.py dari ejb-os (APPS + GLIF).
+   JANGAN disunting tangan: ubah menunya di ejb-os, lalu jalankan skripnya. */
+var MENU_EJB = [{"id": "exec","nama": "Executive Summary","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=exec","dv": "exec","glif": "<rect x=\"4.6\" y=\"2.8\" width=\"14.8\" height=\"18.4\" rx=\"2.6\"/><path d=\"M8.4 8h7.2M8.4 11.6h7.2M8.4 15.2h4.4\"/>"},{"id": "opella","nama": "Opella Push","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbx9gym0vN38-fQu4KQI31f5qjgbbRXeIvn6jGd6kr02iPa9G2dBRNgYF_J1niOi_HbxHg/exec","glif": "<g transform=\"rotate(-45 12 12)\"><rect x=\"2.8\" y=\"8.6\" width=\"18.4\" height=\"6.8\" rx=\"3.4\"/><path d=\"M12 8.6v6.8\"/></g>"},{"id": "gmv","nama": "Cek GMV","urls": {"ej": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyRhGFqK1aL6TevR9mE1DdsGZC9CC2TTKZPFEwEW9xf4oTPM9GLOPOOIW3uXyFMLk0bOA/exec?v=gmv","bali": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyPE92dAZBfnrehfJD7YITXfFkXgDd-XRyEx78-bsJVWg-Ofhf575cqDGGny9ptOvFz/exec?v=gmv"},"glif": "<path d=\"M3 12h4l2 6 4-14 2 8h6\"/>"},{"id": "price","nama": "Price List & Stock","urls": {"ej": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyRhGFqK1aL6TevR9mE1DdsGZC9CC2TTKZPFEwEW9xf4oTPM9GLOPOOIW3uXyFMLk0bOA/exec?v=price","bali": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyPE92dAZBfnrehfJD7YITXfFkXgDd-XRyEx78-bsJVWg-Ofhf575cqDGGny9ptOvFz/exec?v=price"},"glif": "<rect x=\"5\" y=\"3\" width=\"14\" height=\"18\" rx=\"2.4\"/><path d=\"M9 8h6M9 12h6M9 16h3\"/>"},{"id": "misi","nama": "Cek Misi","urls": {"ej": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyRhGFqK1aL6TevR9mE1DdsGZC9CC2TTKZPFEwEW9xf4oTPM9GLOPOOIW3uXyFMLk0bOA/exec?v=misi","bali": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyPE92dAZBfnrehfJD7YITXfFkXgDd-XRyEx78-bsJVWg-Ofhf575cqDGGny9ptOvFz/exec?v=misi"},"glif": "<circle cx=\"12\" cy=\"12\" r=\"8.2\"/><circle cx=\"12\" cy=\"12\" r=\"3.4\"/><path d=\"M12 1.8v2.4M12 19.8v2.4M1.8 12h2.4M19.8 12h2.4\"/>"},{"id": "wtu","nama": "WTU Push","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=wtu","dv": "wtu","glif": "<rect x=\"3.4\" y=\"5\" width=\"17.2\" height=\"15.4\" rx=\"2.6\"/><path d=\"M3.4 9.6h17.2M8.2 3.4v3.4M15.8 3.4v3.4\"/><path d=\"M7 13.4h3M13.6 13.4h3.4M7 16.8h3\"/><path d=\"M13.6 16.8h3.4\" stroke-dasharray=\"1.6 1.6\"/>"},{"id": "deal","nama": "Dealing","urls": {"ej": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyRhGFqK1aL6TevR9mE1DdsGZC9CC2TTKZPFEwEW9xf4oTPM9GLOPOOIW3uXyFMLk0bOA/exec?v=deal","bali": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyPE92dAZBfnrehfJD7YITXfFkXgDd-XRyEx78-bsJVWg-Ofhf575cqDGGny9ptOvFz/exec?v=deal"},"glif": "<rect x=\"4.6\" y=\"2.8\" width=\"14.8\" height=\"18.4\" rx=\"2.6\"/><path d=\"M8 7h8\"/><path d=\"M8.6 11.6h.01M12 11.6h.01M15.4 11.6h.01M8.6 15.2h.01M12 15.2h.01M15.4 15.2h.01M8.6 18.4h3.4M15.4 18.4h.01\"/>"},{"id": "cam","nama": "GPS & SCAN Camera","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbw0O8Eyoexifm0RlIUCn0JYxjA4e1k_06Kn2nKu6yrf9to4M3I3D8TVxNfGk04ksmMq/exec","glif": "<path d=\"M3 8.6a2 2 0 0 1 2-2h2.3l1.3-2.2h6.8L16.7 6.6H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/><circle cx=\"12\" cy=\"12.8\" r=\"3.4\"/>"},{"id": "today","nama": "Today's Order","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=today","dv": "today","glif": "<path d=\"M5.4 7.6h13.2l-1 11.2a2 2 0 0 1-2 1.8H8.4a2 2 0 0 1-2-1.8z\"/><path d=\"M9 9.2V6.4a3 3 0 0 1 6 0v2.8\"/><path d=\"M9.6 13.6l1.8 1.8 3.2-3.4\"/>"},{"id": "growth","nama": "Growth Journey","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=growth","dv": "growth","glif": "<path d=\"M3.6 19.4h16.8\"/><path d=\"M6.4 19.4v-5.2M11 19.4V9.6M15.6 19.4v-7M20 19.4V5.8\"/>"},{"id": "dpd","nama": "DPD Watchlist","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=dpd","dv": "dpd","glif": "<path d=\"M12 3.2l8.4 3.4v5.1c0 4.4-3.3 7.9-8.4 9.1-5.1-1.2-8.4-4.7-8.4-9.1V6.6z\"/><path d=\"M12 8.6v4.2\"/><circle cx=\"12\" cy=\"16.2\" r=\".95\" fill=\"currentColor\" stroke=\"none\"/>"},{"id": "pareto","nama": "My Pareto","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=pareto","dv": "pareto","glif": "<path d=\"M3.6 19.6h16.8\"/><path d=\"M6.2 19.6V7.4M11 19.6v-4.2M15.8 19.6v-7.4M20 19.6V4.6\"/><path d=\"M3.6 12.6l4-5 4.6 4.4 7.4-7.6\" stroke-dasharray=\"2.6 2.4\"/>"},{"id": "chat","nama": "SwipeRx Chat - AI","url": "https://wa.me/6285139572526","glif": "<path d=\"M20.6 11.6a8.4 8.4 0 0 1-12.4 7.4L3.6 20.4l1.5-4.4a8.4 8.4 0 1 1 15.5-4.4z\"/><path d=\"M8.9 9.4c0 3 2.4 5.4 5.4 5.4\"/>"},{"id": "rank","nama": "BLITZ Ranking","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=rank","dv": "rank","glif": "<path d=\"M7.4 21h9.2\"/><path d=\"M12 21v-3.6\"/><path d=\"M6.6 3.4h10.8v4.2a5.4 5.4 0 0 1-10.8 0z\"/><path d=\"M6.6 5h-2.4a3 3 0 0 0 3 3M17.4 5h2.4a3 3 0 0 1-3 3\"/>"},{"id": "jarvis","nama": "JARVIS","url": "https://datastudio.google.com/reporting/3e1607bd-dd79-47fc-b187-56cf749de2c2/page/p_xjmv4mhy2c","glif": "<circle cx=\"12\" cy=\"12\" r=\"8.4\"/><circle cx=\"12\" cy=\"12\" r=\"3.1\"/><path d=\"M12 3.6v2.6M12 17.8v2.6M3.6 12h2.6M17.8 12h2.6\"/>"},{"id": "sales","nama": "Sales App","url": "https://sales-app.swiperx.com/","glif": "<rect x=\"6.2\" y=\"2.8\" width=\"11.6\" height=\"18.4\" rx=\"2.6\"/><path d=\"M10.4 5.6h3.2\"/><path d=\"M9.4 12.4l1.9 1.9 3.6-3.8\"/>"},{"id": "rekam","nama": "101 Recorder","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbzLtgkYe_jNNwcuP9Pe3zBLHzG8Ke7TCr350S5HKF8TrJxFu8DhyviGeKo-36qCVALp/exec","glif": "<rect x=\"9\" y=\"2.8\" width=\"6\" height=\"11.4\" rx=\"3\"/><path d=\"M5.4 11a6.6 6.6 0 0 0 13.2 0M12 17.6v3.6M8.8 21.2h6.4\"/>"}];
+var MENU_GRUP = [["Numbers", ["exec", "today", "growth", "wtu", "pareto", "dpd", "rank"]], ["Field work", ["gmv", "price", "misi", "deal", "opella", "cam", "rekam"]], ["Links", ["chat", "jarvis", "sales"]]];
+var MENU_HOME = "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbwtU0N61bsjF8lmnbDSu0UTUua6yc--gjdrwS2S_S_f61OKOCe7_oCq6_BwjhvzPISC/exec";
+/* LACI MENU EJB — satu modul, dipakai SEMUA app EJB (disalin oleh
+   scripts/sinkron-menu.py; sumbernya berkas ini — jangan sunting salinannya).
+
+   Berdiri sendiri: tidak memakai `$`, `el`, `esc`, token CSS, atau variabel
+   global app mana pun. Fungsi di dalamnya berawalan `lc` — audit "fungsi
+   dobel" Opella Push memindai SEMUA deklarasi fungsi, termasuk yang di dalam
+   pembungkus, jadi `el`/`esc` lokal akan terbaca bentrok dengan milik app. Tiap app punya nama sendiri untuk hal-hal itu (Cockpit
+   --tx/body.light, yang lain --txt/data-theme), dan modul yang bergantung
+   pada salah satunya akan rusak diam-diam di app lain.
+
+   Pakai:
+     LACI.pasang({
+       tombol : 'btnLaci',                 // id tombol ☰ (untuk aria-expanded)
+       area   : 'ej' | 'bali',             // memilih URL Cockpit yang benar
+       aktif  : function(){ return 'exec'; },          // id menu yang sedang dibuka
+       pindah : function(m){ ...; return true; },      // true = ditangani di app ini
+       profil : function(){ return {nama:'…', sub:'ASM · East Java'}; },
+       versi  : function(){ return 'HnriCode V…'; },
+       temaSistem: false                   // true kalau app mengikuti prefers-color-scheme
+     });
+   Tombol ☰ memanggil laciBuka(). */
+var LACI = (function () {
+  var O = {}, siap = false, x0 = null;
+
+  function lcEl(i){ return document.getElementById(i); }
+  function lcEsc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function lcIkon(g){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" ' +
+           'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + g + '</svg>';
+  }
+  /* area boleh fungsi: Cockpit baru tahu wilayahnya sesudah boot. */
+  function lcArea(){ return typeof O.area === 'function' ? lcPanggil(O.area, 'ej') : (O.area || 'ej'); }
+  function lcUrlDari(m){ return m.url || (m.urls && (m.urls[lcArea()] || m.urls.ej)) || '#'; }
+  function lcPanggil(f, d){ try { return f ? f() : d; } catch (e) { return d; } }
+
+  /* Inisial depan + BELAKANG, sama dengan kartu identitas EJB OS ("HP",
+     bukan "HA") — satu orang, satu tanda, di semua app. */
+  function lcInisial(nama){
+    /* Nama kosong -> app mengirim EMAIL. Domain dibuang dulu: tanpa itu
+       "henri.prasetyo@swiperxapp.com" jadi "HC" (dari ".com"). */
+    var k = String(nama || '').split('@')[0].split(/[\s._-]+/).filter(Boolean);
+    return (k.length > 1 ? k[0].charAt(0) + k[k.length - 1].charAt(0) : (k[0] || '—').charAt(0)).toUpperCase();
+  }
+
+  function lcGambar(){
+    var perId = {}, i;
+    for (i = 0; i < MENU_EJB.length; i++) perId[MENU_EJB[i].id] = MENU_EJB[i];
+    var aktif = lcPanggil(O.aktif, '');
+    var p = lcPanggil(O.profil, null);
+    var h = '';
+    if (p && p.nama) {
+      h += '<div class="lc-profil"><div class="lc-ava">' + lcEsc(lcInisial(p.nama)) + '</div>' +
+           '<div class="lc-pt"><b>' + lcEsc(p.nama) + '</b>' + (p.sub ? '<span>' + lcEsc(p.sub) + '</span>' : '') + '</div></div>';
+    }
+    h += '<nav class="lc-daftar"><a class="lc-item lc-home" href="' + lcEsc(MENU_HOME) + '" target="_top">' +
+         lcIkon('<path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/>') + 'EJB OS home</a>';
+    MENU_GRUP.forEach(function (g) {
+      h += '<div class="lc-grup">' + lcEsc(g[0]) + '</div>';
+      g[1].forEach(function (id) {
+        var m = perId[id]; if (!m) return;
+        var on = id === aktif;
+        /* Selalu <a href target=_top>: kalau JS app gagal, laci tetap berfungsi
+           sebagai tautan biasa. Menu milik app ini ditangkap di klik (pindah). */
+        h += '<a class="lc-item' + (on ? ' lc-aktif' : '') + '" href="' + lcEsc(lcUrlDari(m)) + '" target="_top"' +
+             ' rel="noopener" data-id="' + lcEsc(id) + '"' + (on ? ' aria-current="page"' : '') + '>' +
+             lcIkon(m.glif) + '<span>' + lcEsc(m.nama) + '</span></a>';
+      });
+    });
+    h += '</nav>';
+    var v = lcPanggil(O.versi, '');
+    if (v) h += '<div class="lc-kaki">' + lcEsc(v) + '</div>';
+    lcEl('lcLaci').innerHTML = h;
+  }
+
+  function lcPasang(opsi){
+    O = opsi || {};
+    if (siap) return;
+    siap = true;
+    var t = document.createElement('div'); t.className = 'lc-tabir'; t.id = 'lcTabir';
+    var a = document.createElement('aside');
+    a.className = 'lc-laci' + (O.temaSistem ? ' lc-sistem' : ''); a.id = 'lcLaci';
+    a.setAttribute('aria-label', 'Semua menu EJB'); a.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(t); document.body.appendChild(a);
+    t.addEventListener('click', lcTutup);
+    a.addEventListener('click', function (e) {
+      var k = e.target.closest ? e.target.closest('a.lc-item[data-id]') : null;
+      if (!k || !O.pindah) return;
+      var m = null;
+      for (var i = 0; i < MENU_EJB.length; i++) if (MENU_EJB[i].id === k.getAttribute('data-id')) m = MENU_EJB[i];
+      var ditangani = false;
+      try { ditangani = !!O.pindah(m); } catch (err) { ditangani = false; }
+      if (ditangani) { e.preventDefault(); lcTutup(); }
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && lcTerbuka()) lcTutup(); });
+    /* Geser ke kiri menutup laci — gerakan yang sama dengan app HP. */
+    document.addEventListener('touchstart', function (e) { x0 = lcTerbuka() ? e.touches[0].clientX : null; }, { passive: true });
+    document.addEventListener('touchend', function (e) {
+      if (x0 !== null && e.changedTouches[0].clientX - x0 < -60) lcTutup();
+      x0 = null;
+    }, { passive: true });
+  }
+  function lcTerbuka(){ return document.documentElement.classList.contains('lc-buka'); }
+  function lcBuka(){
+    if (!siap) lcPasang(O);
+    lcGambar();
+    document.documentElement.classList.add('lc-buka');
+    lcEl('lcLaci').setAttribute('aria-hidden', 'false');
+    if (O.tombol && lcEl(O.tombol)) lcEl(O.tombol).setAttribute('aria-expanded', 'true');
+    var on = lcEl('lcLaci').querySelector('.lc-aktif');
+    if (on && on.scrollIntoView) on.scrollIntoView({ block: 'nearest' });
+  }
+  function lcTutup(){
+    document.documentElement.classList.remove('lc-buka');
+    if (lcEl('lcLaci')) lcEl('lcLaci').setAttribute('aria-hidden', 'true');
+    if (O.tombol && lcEl(O.tombol)) lcEl(O.tombol).setAttribute('aria-expanded', 'false');
+  }
+  return { pasang: lcPasang, buka: lcBuka, tutup: lcTutup };
+})();
+function laciBuka(){ LACI.buka(); }
+/* MENU-EJB:SELESAI */
+
+/* Laci menu. Halaman ini tidak tahu siapa penggunanya (tidak ada login di
+   luar Apps Script), jadi tanpa kartu profil. Mengetuk "101 Recorder" cuma
+   menutup laci — membuka app itu DI TAB INI akan membuat salinan kedua,
+   sementara tab app yang menunggu rekaman ini tetap di belakang. Menu lain
+   meninggalkan halaman; rekaman yang sedang berjalan dilindungi peringatan
+   beforeunload, dan yang belum terkirim tetap di IndexedDB. */
+LACI.pasang({
+  tombol: 'btnLaci',
+  area: 'ej',
+  aktif: function () { return 'rekam'; },
+  pindah: function (m) { return !!(m && m.id === 'rekam'); },
+  versi: function () { return VERSI; }
+});
 
 // ================================================================ mulai
 var DENGAN = String(Q.get('dengan') || '').slice(0, 60);

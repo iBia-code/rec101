@@ -499,6 +499,15 @@ audio{width:100%;margin:0 0 14px;display:block}
   --lc-stroke:rgba(255,255,255,.12); --lc-stroke-hi:rgba(255,255,255,.20);
   --lc-fill:rgba(120,120,128,.20); --lc-hijau:#14C47D; --lc-hijau-bg:rgba(20,196,125,.16);
   --lc-ease:cubic-bezier(.32,.72,0,1);
+  /* KACA MELAYANG (25-09-2026, Henri: "see through doesn't work"). Laci
+     melayang di ATAS isi halaman, jadi resepnya resep melayang dari skill
+     (bagian "Floating glass"), BUKAN bahan kartu (--lc-lapis/--lc-bg): cat
+     34%->18% + blur 13px, tabir 10%. Versi pertama memakai bahan kartu +
+     tabir 34% — halamannya sudah gelap SEBELUM kacanya menyaring (jebakan
+     #4), dan pita cekung + pusat gelap bahan kartu menambah catnya (#2). */
+  --lc-apung:linear-gradient(to bottom,rgba(14,15,19,.34),rgba(14,15,19,.18));
+  --lc-bf-apung:blur(13px) saturate(195%);
+  --lc-tabir:rgba(0,0,0,.10);
 }
 /* Terang: dua cara app menandainya — data-theme (EJB OS, Daily, GPS, Opella,
    Recorder) dan body.light (Cockpit). */
@@ -516,6 +525,13 @@ audio{width:100%;margin:0 0 14px;display:block}
   --lc-txt:#05070A; --lc-txt2:rgba(6,9,14,.88); --lc-txt3:rgba(6,9,14,.74);
   --lc-stroke:rgba(0,0,0,.16); --lc-stroke-hi:rgba(0,0,0,.12);
   --lc-fill:rgba(118,118,128,.12); --lc-hijau:#0E9E63; --lc-hijau-bg:rgba(14,158,99,.12);
+  --lc-apung:linear-gradient(to bottom,rgba(255,255,255,.50),rgba(255,255,255,.30));
+  --lc-bf-apung:blur(10px) saturate(180%);
+  --lc-tabir:rgba(16,22,34,.06);
+}
+/* Tabir ikut tema: selektornya sama dengan laci (data-theme / body.light). */
+:root[data-theme="light"] .lc-tabir, body.light .lc-tabir{
+  --lc-tabir:rgba(16,22,34,.06);
 }
 /* GPS & SCAN Camera mengikuti tema SISTEM kalau belum dipilih manual. */
 @media (prefers-color-scheme: light){
@@ -533,9 +549,12 @@ audio{width:100%;margin:0 0 14px;display:block}
     --lc-txt:#05070A; --lc-txt2:rgba(6,9,14,.88); --lc-txt3:rgba(6,9,14,.74);
     --lc-stroke:rgba(0,0,0,.16); --lc-stroke-hi:rgba(0,0,0,.12);
     --lc-fill:rgba(118,118,128,.12); --lc-hijau:#0E9E63; --lc-hijau-bg:rgba(14,158,99,.12);
+    --lc-apung:linear-gradient(to bottom,rgba(255,255,255,.50),rgba(255,255,255,.30));
+    --lc-bf-apung:blur(10px) saturate(180%);
   }
+  :root:not([data-theme="dark"]) .lc-tabir.lc-sistem{ --lc-tabir:rgba(16,22,34,.06); }
 }
-.lc-tabir{position:fixed;inset:0;z-index:2147482000;background:rgba(0,0,0,.34);opacity:0;
+.lc-tabir{position:fixed;inset:0;z-index:2147482000;background:var(--lc-tabir);opacity:0;
   pointer-events:none;transition:opacity 260ms linear}
 .lc-buka .lc-tabir{opacity:1;pointer-events:auto}
 .lc-buka body{overflow:hidden}
@@ -543,9 +562,9 @@ audio{width:100%;margin:0 0 14px;display:block}
   display:flex;flex-direction:column;color:var(--lc-txt);
   padding:calc(14px + env(safe-area-inset-top,0px)) 10px calc(12px + env(safe-area-inset-bottom,0px));
   border-radius:0 26px 26px 0;border:.5px solid var(--lc-stroke-hi);border-left:0;
-  background:var(--lc-lapis),var(--lc-bg);
-  box-shadow:var(--lc-lift),var(--lc-rim),var(--lc-dalam),18px 0 44px rgba(0,0,0,.34);
-  -webkit-backdrop-filter:var(--lc-bf);backdrop-filter:var(--lc-bf);
+  background:var(--lc-iris),var(--lc-apung);
+  box-shadow:var(--lc-lift),var(--lc-rim),18px 0 44px rgba(0,0,0,.30);
+  -webkit-backdrop-filter:var(--lc-bf-apung);backdrop-filter:var(--lc-bf-apung);
   font:400 14px/1.3 'Nunito Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   transform:translateX(-106%);visibility:hidden;
   transition:transform 320ms var(--lc-ease),visibility 0s linear 320ms}
@@ -660,7 +679,7 @@ audio{width:100%;margin:0 0 14px;display:block}
 </div>
 
 <script>
-var VERSI = 'Perekam HnriCode V4 · 24 SEP 2026';
+var VERSI = 'Perekam HnriCode V5 · 25 SEP 2026';
 function el(id){ return document.getElementById(id); }
 
 // ================================================================ asal app
@@ -1106,7 +1125,12 @@ var LACI = (function () {
       h += '<div class="lc-profil"><div class="lc-ava">' + lcEsc(lcInisial(p.nama)) + '</div>' +
            '<div class="lc-pt"><b>' + lcEsc(p.nama) + '</b>' + (p.sub ? '<span>' + lcEsc(p.sub) + '</span>' : '') + '</div></div>';
     }
-    h += '<nav class="lc-daftar"><a class="lc-item lc-home" href="' + lcEsc(MENU_HOME) + '" target="_top">' +
+    /* <div role="navigation">, BUKAN <nav>: Cockpit punya aturan global
+       `nav{position:sticky; latar pekat …}` untuk bilahnya sendiri,
+       dan <nav> di dalam laci ikut mewarisinya — daftar menu jadi lempeng
+       PEKAT di tengah laci kaca (25-09-2026, "see through doesn't work" cuma
+       di Cek GMV). Pelajaran CLAUDE.md: elemen ber-aturan global mewarisi. */
+    h += '<div class="lc-daftar" role="navigation"><a class="lc-item lc-home" href="' + lcEsc(MENU_HOME) + '" target="_top">' +
          lcIkon('<path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/>') + 'EJB OS home</a>';
     MENU_GRUP.forEach(function (g) {
       h += '<div class="lc-grup">' + lcEsc(g[0]) + '</div>';
@@ -1120,7 +1144,7 @@ var LACI = (function () {
              lcIkon(m.glif) + '<span>' + lcEsc(m.nama) + '</span></a>';
       });
     });
-    h += '</nav>';
+    h += '</div>';
     var v = lcPanggil(O.versi, '');
     if (v) h += '<div class="lc-kaki">' + lcEsc(v) + '</div>';
     lcEl('lcLaci').innerHTML = h;
@@ -1130,7 +1154,7 @@ var LACI = (function () {
     O = opsi || {};
     if (siap) return;
     siap = true;
-    var t = document.createElement('div'); t.className = 'lc-tabir'; t.id = 'lcTabir';
+    var t = document.createElement('div'); t.className = 'lc-tabir' + (O.temaSistem ? ' lc-sistem' : ''); t.id = 'lcTabir';
     var a = document.createElement('aside');
     a.className = 'lc-laci' + (O.temaSistem ? ' lc-sistem' : ''); a.id = 'lcLaci';
     a.setAttribute('aria-label', 'Semua menu EJB'); a.setAttribute('aria-hidden', 'true');

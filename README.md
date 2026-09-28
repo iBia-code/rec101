@@ -13,6 +13,15 @@ di sini mikrofon dipakai, lalu audionya dikirim BALIK ke app lewat
 - Cadangan di HP dibuang HANYA sesudah app menjawab `aman: true` — yaitu
   sesudah app sendiri menyimpannya ke IndexedDB.
 
+## Mode "Meeting online" (V7, laptop saja)
+
+Dengan headset, mikrofon cuma menangkap suara sendiri. Mode ini meminta tab
+meeting lewat `getDisplayMedia` (centang **Bagikan audio tab**), lalu mencampur
+audio tab + mikrofon (Web Audio, pemampat ringan) jadi SATU berkas. Tanpa
+audio tab, rekaman ditolak — bukan diam-diam direkam setengah. Saklarnya tidak
+tampil di HP: Android/iPhone tidak punya `getDisplayMedia`, dan OS HP melarang
+menangkap audio panggilan app lain.
+
 ## Terbitkan / perbarui
 
 Salin `index.html` ke repo GitHub Pages (publik), lalu isi `PEREKAM_URL` di

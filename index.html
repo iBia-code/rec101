@@ -392,6 +392,19 @@ textarea{min-height:64px;margin-bottom:0}
   letter-spacing:-.04em;font-variant-numeric:tabular-nums}
 .ukur{font-size:12px;font-weight:700;color:var(--txt3);min-height:17px}
 canvas#gelombang{display:block;width:100%;height:56px;margin:14px 0 18px}
+/* Saklar jenis rekaman (V7). Cuma tampil di laptop — lihat bisaMeet(). Pil
+   terpilih memakai bahan tombol bulat halaman ini (--op-lapis-sm), bukan
+   resep baru: dua bahan kaca di satu kartu terbaca sebagai satu yang rusak. */
+.mode{display:flex;gap:4px;padding:4px;margin:0 auto 14px;max-width:380px;border-radius:999px;
+  background:var(--fill2);border:.5px solid var(--stroke)}
+.mode button{flex:1;min-height:38px;border:0;border-radius:999px;cursor:pointer;background:transparent;
+  color:var(--txt3);font:800 13px/1.2 'Nunito Sans',sans-serif;transition:transform var(--dur-tap) var(--ease-pop)}
+.mode button.on{color:var(--txt);background:var(--op-lapis-sm),var(--ic-kaca-bg);box-shadow:var(--op-rim),var(--kaca-dalam)}
+.mode button:active{transform:scale(.95)}
+.mode button[disabled]{cursor:default}
+.mode button[disabled]:not(.on){opacity:.45}
+.mode-ket{margin:-4px auto 14px;max-width:420px;font-size:12.5px;line-height:1.5;color:var(--txt3)}
+.mode-ket b{color:var(--txt)}
 
 .kendali{display:flex;align-items:flex-start;justify-content:center;gap:26px}
 .btn-rek{width:84px;height:84px;border-radius:50%;cursor:pointer;position:relative;
@@ -641,6 +654,13 @@ audio{width:100%;margin:0 0 14px;display:block}
 
   <section class="kaca rek" id="kartuRekam">
     <p class="nama-rapat hide" id="namaRapat"></p>
+    <div class="mode hide" id="mode" role="group" aria-label="Jenis rekaman">
+      <button type="button" data-m="hadir" onclick="pilihMode('hadir')">&#127908; Tatap muka</button>
+      <button type="button" data-m="meet" onclick="pilihMode('meet')">&#127911; Meeting online</button>
+    </div>
+    <p class="mode-ket hide" id="modeKet">Pakai headset di Google Meet / Zoom web? Setelah tombol merah ditekan, Chrome
+      minta memilih yang dibagikan: pilih <b>tab meeting-nya</b> dan nyalakan <b>"Bagikan audio tab"</b>
+      (Share tab audio). Suaramu dari mikrofon, suara lawan bicara dari tab — jadi satu rekaman.</p>
     <span class="chip" id="chip"><i></i><span id="chipTeks">Siap merekam</span></span>
     <div class="waktu" id="waktu">00:00</div>
     <div class="ukur" id="ukur">&nbsp;</div>
@@ -679,7 +699,7 @@ audio{width:100%;margin:0 0 14px;display:block}
 </div>
 
 <script>
-var VERSI = 'Perekam HnriCode V6 · 26 SEP 2026';
+var VERSI = 'Perekam HnriCode V7 · 28 SEP 2026';
 function el(id){ return document.getElementById(id); }
 
 // ================================================================ asal app
@@ -800,37 +820,149 @@ function mulai(){
     info('gagal', 'Browser ini tidak bisa merekam. Buka dengan <b>Chrome</b> (Android/PC) atau <b>Safari</b> (iPhone).');
     return;
   }
-  navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } })
-  .then(function (stream) {
-    var r;
-    try { r = new MediaRecorder(stream, { mimeType: jenis, audioBitsPerSecond: 32000 }); }
-    catch (e) { r = new MediaRecorder(stream); jenis = r.mimeType || jenis; }
-    REK = { r: r, stream: stream, jenis: jenis, mulai: Date.now(), idx: 0, potong: [], ms: 0,
-            sejak: Date.now(), jeda: false, id: 'p' + Date.now().toString(36) };
-    dbTulis('sesi', { id: REK.id, mulai: REK.mulai, jenis: jenis, durasi: 0, status: 'rekam', dengan: DENGAN });
-    r.ondataavailable = function (e) {
-      if (!e.data || !e.data.size || !REK) return;
-      REK.potong.push(e.data);
-      dbTulis('potong', { sesi: REK.id, idx: REK.idx++, blob: e.data });
-      dbTulis('sesi', { id: REK.id, mulai: REK.mulai, jenis: REK.jenis, durasi: detikRekam(), status: 'rekam', dengan: DENGAN });
-      el('ukur').textContent = mb(ukuranRek()) + ' · tersimpan di HP';
-    };
-    r.onstop = selesaiSungguh;
-    r.start(4000);
-    pasangMeter(stream);
-    kunciLayar(true);
-    HASIL = null;
-    el('kartuHasil').classList.add('hide');
-    paintKendali();
-    detak();
-    info('', 'Sedang merekam. <b>Biarkan layar menyala</b> dan halaman ini tetap terbuka — layar yang terkunci bisa menghentikan mikrofon.');
+  if (MODE === 'meet' && bisaMeet()) { mulaiMeet(jenis); return; }
+  navigator.mediaDevices.getUserMedia({ audio: MIC_OPSI })
+  .then(function (stream) { jalankan(stream, jenis, { mode: 'hadir', sumber: [], simpul: [] }); })
+  .catch(galatMic);
+}
+/* Mikrofon: sama untuk kedua mode. Di mode meeting orangnya memakai headset,
+   jadi peredam gema tidak memotong apa pun — dibiarkan menyala supaya mode
+   yang dipakai tanpa headset tetap aman. */
+var MIC_OPSI = { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
+function galatMic(e){
+  var n = e && e.name;
+  info('gagal', n === 'NotAllowedError'
+    ? 'Izin mikrofon ditolak. Ketuk ikon <b>aA</b> / gembok di kolom alamat → izinkan <b>Mikrofon</b>, lalu tekan Rekam lagi.'
+    : n === 'NotFoundError' ? 'Tidak ada mikrofon di perangkat ini.'
+    : 'Mikrofon tidak bisa dibuka: ' + esc(e && e.message || e));
+}
+
+/* Satu jalur rekam untuk kedua mode. `stream` = yang DIREKAM (mikrofon saja,
+   atau campuran mikrofon + tab); `ext.sumber` = stream asli yang harus ikut
+   dimatikan waktu selesai — kalau tidak, ikon "sedang berbagi"/mikrofon Chrome
+   tetap menyala sesudah rekaman berhenti. */
+function jalankan(stream, jenis, ext){
+  var r;
+  try { r = new MediaRecorder(stream, { mimeType: jenis, audioBitsPerSecond: 32000 }); }
+  catch (e) { r = new MediaRecorder(stream); jenis = r.mimeType || jenis; }
+  REK = { r: r, stream: stream, sumber: ext.sumber || [], simpul: ext.simpul || [], mode: ext.mode,
+          jenis: jenis, mulai: Date.now(), idx: 0, potong: [], ms: 0,
+          sejak: Date.now(), jeda: false, id: 'p' + Date.now().toString(36) };
+  dbTulis('sesi', { id: REK.id, mulai: REK.mulai, jenis: jenis, durasi: 0, status: 'rekam', dengan: DENGAN, mode: REK.mode });
+  r.ondataavailable = function (e) {
+    if (!e.data || !e.data.size || !REK) return;
+    REK.potong.push(e.data);
+    dbTulis('potong', { sesi: REK.id, idx: REK.idx++, blob: e.data });
+    dbTulis('sesi', { id: REK.id, mulai: REK.mulai, jenis: REK.jenis, durasi: detikRekam(), status: 'rekam', dengan: DENGAN, mode: REK.mode });
+    el('ukur').textContent = mb(ukuranRek()) + (REK.mode === 'meet' ? ' · tersimpan di laptop ini' : ' · tersimpan di HP');
+  };
+  r.onstop = selesaiSungguh;
+  r.start(4000);
+  pasangMeter(stream);
+  kunciLayar(true);
+  HASIL = null;
+  el('kartuHasil').classList.add('hide');
+  paintKendali();
+  detak();
+  info('', ext.mode === 'meet'
+    ? 'Merekam <b>mikrofon + audio tab meeting</b>. Boleh pindah ke tab meeting — tapi <b>jangan tutup tab ini</b> dan jangan tekan <b>"Berhenti berbagi"</b> sampai rapat selesai.'
+    : 'Sedang merekam. <b>Biarkan layar menyala</b> dan halaman ini tetap terbuka — layar yang terkunci bisa menghentikan mikrofon.');
+}
+
+/* ================================================================ mode meeting online
+   Henri 28-09-2026: dengan headset, mikrofon cuma mendengar suara sendiri —
+   suara lawan bicara masuk ke telinga, bukan ke udara, jadi rekamannya
+   setengah rapat. Mode ini menangkap AUDIO TAB meeting (getDisplayMedia) dan
+   mencampurnya dengan mikrofon jadi satu berkas.
+
+   Cuma di laptop. Chrome Android & Safari iPhone tidak punya getDisplayMedia,
+   dan OS HP memang melarang halaman web (juga kebanyakan app) menangkap audio
+   panggilan app lain — tidak ada kode yang bisa melewatinya. Di laptop pun
+   yang bisa dibagikan: tab browser (Meet, Zoom/Teams versi web) di semua OS,
+   atau seluruh layar + audio sistem di Windows. App Zoom desktop di Mac butuh
+   driver audio virtual — di luar jangkauan halaman ini. */
+var MODE = 'hadir';
+function bisaMeet(){
+  return !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) &&
+         !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+}
+function bacaMode(){ try { return localStorage.getItem('rec101.mode') === 'meet' ? 'meet' : 'hadir'; } catch (e) { return 'hadir'; } }
+function pilihMode(m){
+  if (REK) return;
+  MODE = (m === 'meet' && bisaMeet()) ? 'meet' : 'hadir';
+  try { localStorage.setItem('rec101.mode', MODE); } catch (e) {}
+  paintMode();
+}
+function paintMode(){
+  var ada = bisaMeet();
+  el('mode').classList.toggle('hide', !ada);
+  el('modeKet').classList.toggle('hide', !ada || MODE !== 'meet' || !!REK);
+  if (!ada) return;
+  [].forEach.call(el('mode').querySelectorAll('button'), function (b) {
+    var on = b.getAttribute('data-m') === MODE;
+    b.className = on ? 'on' : '';
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    b.disabled = !!REK;          // ganti mode di tengah rekaman = dua berkas setengah
+  });
+}
+function hentikan(s){ if (s) try { s.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {} }
+
+function mulaiMeet(jenis){
+  var layar = null, mic = null;
+  /* getDisplayMedia DIPANGGIL LANGSUNG di dalam ketukan (tekanRekam -> mulai):
+     Chrome menolaknya tanpa aktivasi pengguna yang masih segar. Jadi layar
+     dulu, mikrofon sesudahnya — getUserMedia tidak butuh ketukan. */
+  navigator.mediaDevices.getDisplayMedia({
+    video: true,     // Chrome menolak permintaan audio SAJA; gambarnya langsung dimatikan di bawah
+    audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false,
+             suppressLocalAudioPlayback: false },   // suara meeting tetap terdengar di headset
+    selfBrowserSurface: 'exclude',   // tab perekam ini sendiri tidak ditawarkan
+    surfaceSwitching: 'include', systemAudio: 'include', preferCurrentTab: false
+  })
+  .then(function (s) {
+    layar = s;
+    s.getVideoTracks().forEach(function (t) { t.stop(); });
+    /* Lupa mencentang "Bagikan audio tab" = TIDAK ada track audio. Ditolak di
+       sini, bukan direkam: rekaman satu jam yang ternyata cuma suara sendiri
+       adalah persis masalah yang mau dibetulkan mode ini. */
+    if (!s.getAudioTracks().length) throw { name: 'TanpaAudio' };
+    return navigator.mediaDevices.getUserMedia({ audio: MIC_OPSI });
+  })
+  .then(function (m) {
+    mic = m;
+    var ctx = AUDIOCTX;
+    if (!ctx || !ctx.createMediaStreamDestination) throw { name: 'TanpaCampur' };
+    if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
+    var dest = ctx.createMediaStreamDestination();
+    /* Pemampat ringan: dua orang bicara bersamaan menjumlahkan dua sinyal yang
+       masing-masing sudah dinormalkan — tanpa ini puncaknya terpotong kasar.
+       Ambang tinggi & rasio kecil: yang diredam cuma puncak, bukan dinamika
+       percakapan. SENGAJA tidak disambung ke ctx.destination: itu akan
+       memutar suara meeting dua kali di headset. */
+    var kompres = ctx.createDynamicsCompressor();
+    kompres.threshold.value = -6; kompres.knee.value = 6; kompres.ratio.value = 4;
+    kompres.attack.value = 0.003; kompres.release.value = 0.25;
+    kompres.connect(dest);
+    var sMic = ctx.createMediaStreamSource(mic);
+    var sTab = ctx.createMediaStreamSource(new MediaStream(layar.getAudioTracks()));
+    sMic.connect(kompres); sTab.connect(kompres);
+    layar.getAudioTracks()[0].addEventListener('ended', function () {
+      if (REK && REK.mode === 'meet') info('gagal', '<b>Berbagi audio tab berhenti.</b> Sisa rekaman cuma dari mikrofon (suaramu). ' +
+        'Kalau rapat sudah selesai, tekan <b>Selesai</b>.');
+    });
+    jalankan(dest.stream, jenis, { mode: 'meet', sumber: [mic, layar], simpul: [sMic, sTab, kompres] });
   })
   .catch(function (e) {
+    hentikan(layar); hentikan(mic);
     var n = e && e.name;
-    info('gagal', n === 'NotAllowedError'
-      ? 'Izin mikrofon ditolak. Ketuk ikon <b>aA</b> / gembok di kolom alamat → izinkan <b>Mikrofon</b>, lalu tekan Rekam lagi.'
-      : n === 'NotFoundError' ? 'Tidak ada mikrofon di perangkat ini.'
-      : 'Mikrofon tidak bisa dibuka: ' + esc(e && e.message || e));
+    if (n === 'TanpaAudio') info('gagal', 'Audio tab <b>tidak ikut dibagikan</b>, jadi suara lawan bicara tidak akan terekam. ' +
+      'Tekan tombol merah lagi, pilih <b>tab meeting-nya</b>, dan nyalakan <b>"Bagikan audio tab"</b>. ' +
+      'Audio tab cuma bisa dibagikan dari <b>Chrome</b> atau <b>Edge</b>.');
+    else if (n === 'TanpaCampur') info('gagal', 'Browser ini tidak bisa mencampur dua suara. Pakai <b>Chrome</b> atau <b>Edge</b> terbaru.');
+    else if (layar) galatMic(e);          // layar sudah dibagikan -> yang gagal mikrofonnya
+    else if (n === 'NotAllowedError' || n === 'AbortError') info('gagal', 'Berbagi tab dibatalkan. Tekan tombol merah lagi dan pilih ' +
+      '<b>tab meeting-nya</b> — atau pindah ke <b>Tatap muka</b> kalau tidak memakai headset.');
+    else info('gagal', 'Tab meeting tidak bisa dibagikan: ' + esc(e && e.message || e) + '. Tekan tombol merah sekali lagi.');
   });
 }
 
@@ -852,11 +984,13 @@ function selesai(){
 function selesaiSungguh(){
   if (!REK) return;
   var x = REK; REK = null;
-  x.stream.getTracks().forEach(function (t) { t.stop(); });
+  hentikan(x.stream);
+  (x.sumber || []).forEach(hentikan);
+  (x.simpul || []).forEach(function (n) { try { n.disconnect(); } catch (e) {} });
   lepasMeter(); kunciLayar(false);
   var jenis = x.jenis.split(';')[0];
-  HASIL = { id: x.id, blob: new Blob(x.potong, { type: jenis }), jenis: jenis, mulai: x.mulai, durasi: x.ms / 1000 };
-  dbTulis('sesi', { id: x.id, mulai: x.mulai, jenis: x.jenis, durasi: HASIL.durasi, status: 'siap', dengan: DENGAN });
+  HASIL = { id: x.id, blob: new Blob(x.potong, { type: jenis }), jenis: jenis, mulai: x.mulai, durasi: x.ms / 1000, mode: x.mode };
+  dbTulis('sesi', { id: x.id, mulai: x.mulai, jenis: x.jenis, durasi: HASIL.durasi, status: 'siap', dengan: DENGAN, mode: x.mode });
   paintKendali();
   tampilHasil();
 }
@@ -888,6 +1022,7 @@ function paintKendali(){
   el('chip').className = 'chip' + (on ? (jeda ? ' jeda' : ' on') : '');
   el('chipTeks').textContent = on ? (jeda ? 'Dijeda' : 'Merekam') : (HASIL ? 'Selesai' : 'Siap merekam');
   if (!on && !HASIL) { el('waktu').textContent = '00:00'; el('ukur').innerHTML = '&nbsp;'; }
+  paintMode();
 }
 
 var KUNCI = null;
@@ -955,7 +1090,8 @@ function tampilHasil(){
   el('kartuHasil').classList.remove('hide');
   el('hasilJudul').textContent = '101' + (HASIL.dengan || DENGAN ? ' dengan ' + (HASIL.dengan || DENGAN) : '');
   el('hasilInfo').textContent = format(HASIL.durasi) + ' · ' + mb(HASIL.blob.size) + ' · ' +
-    new Date(HASIL.mulai).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+    new Date(HASIL.mulai).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) +
+    (HASIL.mode === 'meet' ? ' · mic + audio meeting' : '');
   if (URLPUTAR) URL.revokeObjectURL(URLPUTAR);
   URLPUTAR = URL.createObjectURL(HASIL.blob);
   el('putar').src = URLPUTAR;
@@ -1049,7 +1185,7 @@ function pulihkan(id){
     return dbPotong(id).then(function (bl) {
       if (!bl.length) { alert('Isi rekaman ini tidak ada di HP.'); return dbBuang(id).then(cekPulih); }
       var jenis = String(s.jenis || 'audio/webm').split(';')[0];
-      HASIL = { id: id, blob: new Blob(bl, { type: jenis }), jenis: jenis, mulai: s.mulai, durasi: s.durasi || 0, dengan: s.dengan || '' };
+      HASIL = { id: id, blob: new Blob(bl, { type: jenis }), jenis: jenis, mulai: s.mulai, durasi: s.durasi || 0, dengan: s.dengan || '', mode: s.mode || 'hadir' };
       paintKendali(); tampilHasil(); cekPulih();
     });
   });
@@ -1214,6 +1350,8 @@ LACI.pasang({
 // ================================================================ mulai
 var DENGAN = String(Q.get('dengan') || '').slice(0, 60);
 pakaiTema(bacaTema());
+MODE = bisaMeet() ? bacaMode() : 'hadir';
+paintMode();
 el('versi').textContent = VERSI;
 if (DENGAN) { el('namaRapat').classList.remove('hide'); el('namaRapat').innerHTML = '101 dengan <b>' + esc(DENGAN) + '</b>'; }
 info(adaApp() ? '' : 'gagal', adaApp()

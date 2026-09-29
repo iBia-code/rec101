@@ -608,6 +608,35 @@ audio{width:100%;margin:0 0 14px;display:block}
 .lc-item.lc-aktif svg{color:var(--lc-hijau)}
 .lc-home{color:var(--lc-txt);margin-top:8px}
 .lc-kaki{padding:10px 10px 0;border-top:.5px solid var(--lc-stroke);font-size:10.5px;color:var(--lc-txt3)}
+/* LACI DARI KANAN (tombol jempol, 29-09-2026): cermin laci kiri. */
+.lc-kanan .lc-laci{left:auto;right:0;border-radius:26px 0 0 26px;border-left:.5px solid var(--lc-stroke-hi);border-right:0;
+  box-shadow:var(--lc-lift),var(--lc-rim),-18px 0 44px rgba(0,0,0,.30);transform:translateX(106%)}
+.lc-buka.lc-kanan .lc-laci{transform:none}
+/* TOMBOL JEMPOL = TAB TEPI (29-09-2026). Versi bundar 54px menutupi angka yang
+   rata kanan (GAP, CM) — tab 36x56 menempel di tepi layar cuma memakan margin,
+   tetap di zona jempol (posisi naik-turun dari JS). Bahan sama dengan pegangan
+   laci bagian Profil Apotek yang disukai Henri: kecil & tembus pandang. */
+.lc-fab{position:fixed;right:0;top:70%;z-index:2147481999;width:30px;height:54px;padding:0 0 0 3px;
+  border-radius:18px 0 0 18px;display:grid;place-items:center;cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent;
+  border:.5px solid rgba(255,255,255,.20);border-right:0;
+  background:linear-gradient(to bottom,rgba(22,24,30,.40),rgba(22,24,30,.20));
+  -webkit-backdrop-filter:blur(12px) saturate(190%);backdrop-filter:blur(12px) saturate(190%);
+  box-shadow:-6px 8px 22px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.20);
+  transition:opacity .25s linear,width .18s cubic-bezier(.2,.9,.3,1.3),box-shadow .2s}
+.lc-fab svg{width:20px;height:17px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
+.lc-fab.lc-fab-kiri{right:auto;left:0;padding:0 3px 0 0;border-radius:0 18px 18px 0;border:.5px solid rgba(255,255,255,.20);border-left:0;
+  box-shadow:6px 8px 22px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.20)}
+.lc-fab:active,.lc-fab.lc-fab-geser{width:42px}
+.lc-fab.lc-fab-redup{opacity:.45}
+.lc-buka .lc-fab{opacity:0;pointer-events:none}
+:root[data-theme="light"] .lc-fab, body.light .lc-fab{border-color:rgba(0,0,0,.10);
+  background:linear-gradient(to bottom,rgba(255,255,255,.62),rgba(255,255,255,.40));
+  box-shadow:-6px 8px 20px rgba(16,22,38,.16),inset 0 1px 0 rgba(255,255,255,.8)}
+@media (prefers-reduced-motion:reduce){.lc-fab{transition:none}}
+@media print{.lc-fab{display:none}}
+.lc-kaki{display:flex;flex-direction:column;gap:6px}
+.lc-sisi{align-self:flex-start;border:0;cursor:pointer;padding:8px 12px;min-height:36px;border-radius:12px;
+  background:var(--lc-fill);color:var(--lc-txt2);font:800 12px/1.2 'Nunito Sans',-apple-system,sans-serif}
 /* LACI-EJB:CSS:SELESAI */
 </style>
 </head>
@@ -1200,8 +1229,8 @@ function info(jenis, html){ el('info').className = 'info' + (jenis ? ' ' + jenis
 
 /* MENU-EJB:MULAI — DIBANGKITKAN scripts/sinkron-menu.py dari ejb-os (APPS + GLIF).
    JANGAN disunting tangan: ubah menunya di ejb-os, lalu jalankan skripnya. */
-var MENU_EJB = [{"id": "exec","nama": "Executive Summary","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=exec","dv": "exec","glif": "<rect x=\"4.6\" y=\"2.8\" width=\"14.8\" height=\"18.4\" rx=\"2.6\"/><path d=\"M8.4 8h7.2M8.4 11.6h7.2M8.4 15.2h4.4\"/>"},{"id": "opella","nama": "Opella Push","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbx9gym0vN38-fQu4KQI31f5qjgbbRXeIvn6jGd6kr02iPa9G2dBRNgYF_J1niOi_HbxHg/exec","glif": "<g transform=\"rotate(-45 12 12)\"><rect x=\"2.8\" y=\"8.6\" width=\"18.4\" height=\"6.8\" rx=\"3.4\"/><path d=\"M12 8.6v6.8\"/></g>"},{"id": "profil","nama": "Profil Apotek","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycby9arOUmt2looXudZEqihwU1vj6oIhJCiTRpC4PnunhMBtos9wTCx2bI5WrvOQOskhd/exec","glif": "<rect x=\"3\" y=\"4.6\" width=\"18\" height=\"14.8\" rx=\"2.4\"/><circle cx=\"8.6\" cy=\"10.4\" r=\"2.2\"/><path d=\"M5.4 16.4c.7-1.7 1.8-2.5 3.2-2.5s2.5.8 3.2 2.5\"/><path d=\"M14 9.4h4.4M14 12.6h4.4M14 15.8h2.8\"/>"},{"id": "gmv","nama": "Cek GMV","urls": {"ej": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyRhGFqK1aL6TevR9mE1DdsGZC9CC2TTKZPFEwEW9xf4oTPM9GLOPOOIW3uXyFMLk0bOA/exec?v=gmv","bali": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyPE92dAZBfnrehfJD7YITXfFkXgDd-XRyEx78-bsJVWg-Ofhf575cqDGGny9ptOvFz/exec?v=gmv"},"glif": "<path d=\"M3 12h4l2 6 4-14 2 8h6\"/>"},{"id": "price","nama": "Price List & Stock","urls": {"ej": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyRhGFqK1aL6TevR9mE1DdsGZC9CC2TTKZPFEwEW9xf4oTPM9GLOPOOIW3uXyFMLk0bOA/exec?v=price","bali": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyPE92dAZBfnrehfJD7YITXfFkXgDd-XRyEx78-bsJVWg-Ofhf575cqDGGny9ptOvFz/exec?v=price"},"glif": "<rect x=\"5\" y=\"3\" width=\"14\" height=\"18\" rx=\"2.4\"/><path d=\"M9 8h6M9 12h6M9 16h3\"/>"},{"id": "misi","nama": "Cek Misi","urls": {"ej": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyRhGFqK1aL6TevR9mE1DdsGZC9CC2TTKZPFEwEW9xf4oTPM9GLOPOOIW3uXyFMLk0bOA/exec?v=misi","bali": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyPE92dAZBfnrehfJD7YITXfFkXgDd-XRyEx78-bsJVWg-Ofhf575cqDGGny9ptOvFz/exec?v=misi"},"glif": "<circle cx=\"12\" cy=\"12\" r=\"8.2\"/><circle cx=\"12\" cy=\"12\" r=\"3.4\"/><path d=\"M12 1.8v2.4M12 19.8v2.4M1.8 12h2.4M19.8 12h2.4\"/>"},{"id": "wtu","nama": "WTU Push","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=wtu","dv": "wtu","glif": "<rect x=\"3.4\" y=\"5\" width=\"17.2\" height=\"15.4\" rx=\"2.6\"/><path d=\"M3.4 9.6h17.2M8.2 3.4v3.4M15.8 3.4v3.4\"/><path d=\"M7 13.4h3M13.6 13.4h3.4M7 16.8h3\"/><path d=\"M13.6 16.8h3.4\" stroke-dasharray=\"1.6 1.6\"/>"},{"id": "deal","nama": "Dealing","urls": {"ej": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyRhGFqK1aL6TevR9mE1DdsGZC9CC2TTKZPFEwEW9xf4oTPM9GLOPOOIW3uXyFMLk0bOA/exec?v=deal","bali": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyPE92dAZBfnrehfJD7YITXfFkXgDd-XRyEx78-bsJVWg-Ofhf575cqDGGny9ptOvFz/exec?v=deal"},"glif": "<rect x=\"4.6\" y=\"2.8\" width=\"14.8\" height=\"18.4\" rx=\"2.6\"/><path d=\"M8 7h8\"/><path d=\"M8.6 11.6h.01M12 11.6h.01M15.4 11.6h.01M8.6 15.2h.01M12 15.2h.01M15.4 15.2h.01M8.6 18.4h3.4M15.4 18.4h.01\"/>"},{"id": "cam","nama": "GPS & SCAN Camera","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbw0O8Eyoexifm0RlIUCn0JYxjA4e1k_06Kn2nKu6yrf9to4M3I3D8TVxNfGk04ksmMq/exec","glif": "<path d=\"M3 8.6a2 2 0 0 1 2-2h2.3l1.3-2.2h6.8L16.7 6.6H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/><circle cx=\"12\" cy=\"12.8\" r=\"3.4\"/>"},{"id": "today","nama": "Today's Order","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=today","dv": "today","glif": "<path d=\"M5.4 7.6h13.2l-1 11.2a2 2 0 0 1-2 1.8H8.4a2 2 0 0 1-2-1.8z\"/><path d=\"M9 9.2V6.4a3 3 0 0 1 6 0v2.8\"/><path d=\"M9.6 13.6l1.8 1.8 3.2-3.4\"/>"},{"id": "growth","nama": "Growth Journey","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=growth","dv": "growth","glif": "<path d=\"M3.6 19.4h16.8\"/><path d=\"M6.4 19.4v-5.2M11 19.4V9.6M15.6 19.4v-7M20 19.4V5.8\"/>"},{"id": "dpd","nama": "DPD Watchlist","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=dpd","dv": "dpd","glif": "<path d=\"M12 3.2l8.4 3.4v5.1c0 4.4-3.3 7.9-8.4 9.1-5.1-1.2-8.4-4.7-8.4-9.1V6.6z\"/><path d=\"M12 8.6v4.2\"/><circle cx=\"12\" cy=\"16.2\" r=\".95\" fill=\"currentColor\" stroke=\"none\"/>"},{"id": "pareto","nama": "My Pareto","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=pareto","dv": "pareto","glif": "<path d=\"M3.6 19.6h16.8\"/><path d=\"M6.2 19.6V7.4M11 19.6v-4.2M15.8 19.6v-7.4M20 19.6V4.6\"/><path d=\"M3.6 12.6l4-5 4.6 4.4 7.4-7.6\" stroke-dasharray=\"2.6 2.4\"/>"},{"id": "chain","nama": "Pharmacy Chains","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=chain","dv": "chain","glif": "<path d=\"M3.6 9.4l1.9-5h13l1.9 5\"/><path d=\"M3.6 9.4a2.8 2.8 0 0 0 5.6 0 2.8 2.8 0 0 0 5.6 0 2.8 2.8 0 0 0 5.6 0\"/><path d=\"M5.2 12.2v8.4h13.6v-8.4\"/><path d=\"M10 20.6v-4.8h4v4.8\"/>"},{"id": "kredit","nama": "Unblock & CL Upgrade","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=kredit","dv": "kredit","glif": "<rect x=\"2.6\" y=\"5.4\" width=\"14.4\" height=\"10.4\" rx=\"2.2\"/><path d=\"M2.6 9h14.4M5.6 12.6h3.4\"/><path d=\"M19.6 20.6v-8.4M16.6 15.2l3-3 3 3\"/>"},{"id": "chat","nama": "SwipeRx Chat - AI","url": "https://wa.me/6285139572526","glif": "<path d=\"M20.6 11.6a8.4 8.4 0 0 1-12.4 7.4L3.6 20.4l1.5-4.4a8.4 8.4 0 1 1 15.5-4.4z\"/><path d=\"M8.9 9.4c0 3 2.4 5.4 5.4 5.4\"/>"},{"id": "rank","nama": "BLITZ Ranking","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=rank","dv": "rank","glif": "<path d=\"M7.4 21h9.2\"/><path d=\"M12 21v-3.6\"/><path d=\"M6.6 3.4h10.8v4.2a5.4 5.4 0 0 1-10.8 0z\"/><path d=\"M6.6 5h-2.4a3 3 0 0 0 3 3M17.4 5h2.4a3 3 0 0 1-3 3\"/>"},{"id": "jarvis","nama": "JARVIS","url": "https://datastudio.google.com/reporting/3e1607bd-dd79-47fc-b187-56cf749de2c2/page/p_xjmv4mhy2c","glif": "<circle cx=\"12\" cy=\"12\" r=\"8.4\"/><circle cx=\"12\" cy=\"12\" r=\"3.1\"/><path d=\"M12 3.6v2.6M12 17.8v2.6M3.6 12h2.6M17.8 12h2.6\"/>"},{"id": "enter","nama": "Enter JARVIS","url": "https://www.enterjarvis.com/","glif": "<path d=\"M14 3.4h4.2a2.4 2.4 0 0 1 2.4 2.4v12.4a2.4 2.4 0 0 1-2.4 2.4H14\"/><path d=\"M10.2 16.6l4.6-4.6-4.6-4.6M14.8 12H3.4\"/>"},{"id": "sales","nama": "Sales App","url": "https://sales-app.swiperx.com/","glif": "<rect x=\"6.2\" y=\"2.8\" width=\"11.6\" height=\"18.4\" rx=\"2.6\"/><path d=\"M10.4 5.6h3.2\"/><path d=\"M9.4 12.4l1.9 1.9 3.6-3.8\"/>"},{"id": "rekam","nama": "101 Recorder","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbzLtgkYe_jNNwcuP9Pe3zBLHzG8Ke7TCr350S5HKF8TrJxFu8DhyviGeKo-36qCVALp/exec","glif": "<rect x=\"9\" y=\"2.8\" width=\"6\" height=\"11.4\" rx=\"3\"/><path d=\"M5.4 11a6.6 6.6 0 0 0 13.2 0M12 17.6v3.6M8.8 21.2h6.4\"/>"}];
-var MENU_GRUP = [["Numbers", ["exec", "today", "growth", "wtu", "pareto", "chain", "dpd", "rank"]], ["Field work", ["profil", "gmv", "price", "misi", "deal", "kredit", "opella", "cam", "rekam"]], ["Links", ["chat", "jarvis", "enter", "sales"]]];
+var MENU_EJB = [{"id": "exec","nama": "Executive Summary","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=exec","dv": "exec","glif": "<rect x=\"4.6\" y=\"2.8\" width=\"14.8\" height=\"18.4\" rx=\"2.6\"/><path d=\"M8.4 8h7.2M8.4 11.6h7.2M8.4 15.2h4.4\"/>"},{"id": "opella","nama": "Opella Push","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbx9gym0vN38-fQu4KQI31f5qjgbbRXeIvn6jGd6kr02iPa9G2dBRNgYF_J1niOi_HbxHg/exec","glif": "<g transform=\"rotate(-45 12 12)\"><rect x=\"2.8\" y=\"8.6\" width=\"18.4\" height=\"6.8\" rx=\"3.4\"/><path d=\"M12 8.6v6.8\"/></g>"},{"id": "profil","nama": "Profil Apotek","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycby9arOUmt2looXudZEqihwU1vj6oIhJCiTRpC4PnunhMBtos9wTCx2bI5WrvOQOskhd/exec","glif": "<rect x=\"3\" y=\"4.6\" width=\"18\" height=\"14.8\" rx=\"2.4\"/><circle cx=\"8.6\" cy=\"10.4\" r=\"2.2\"/><path d=\"M5.4 16.4c.7-1.7 1.8-2.5 3.2-2.5s2.5.8 3.2 2.5\"/><path d=\"M14 9.4h4.4M14 12.6h4.4M14 15.8h2.8\"/>"},{"id": "gmv","nama": "Cek GMV","urls": {"ej": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyRhGFqK1aL6TevR9mE1DdsGZC9CC2TTKZPFEwEW9xf4oTPM9GLOPOOIW3uXyFMLk0bOA/exec?v=gmv","bali": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyPE92dAZBfnrehfJD7YITXfFkXgDd-XRyEx78-bsJVWg-Ofhf575cqDGGny9ptOvFz/exec?v=gmv"},"glif": "<path d=\"M3 12h4l2 6 4-14 2 8h6\"/>"},{"id": "price","nama": "Price List & Stock","urls": {"ej": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyRhGFqK1aL6TevR9mE1DdsGZC9CC2TTKZPFEwEW9xf4oTPM9GLOPOOIW3uXyFMLk0bOA/exec?v=price","bali": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyPE92dAZBfnrehfJD7YITXfFkXgDd-XRyEx78-bsJVWg-Ofhf575cqDGGny9ptOvFz/exec?v=price"},"glif": "<rect x=\"5\" y=\"3\" width=\"14\" height=\"18\" rx=\"2.4\"/><path d=\"M9 8h6M9 12h6M9 16h3\"/>"},{"id": "misi","nama": "Cek Misi","urls": {"ej": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyRhGFqK1aL6TevR9mE1DdsGZC9CC2TTKZPFEwEW9xf4oTPM9GLOPOOIW3uXyFMLk0bOA/exec?v=misi","bali": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyPE92dAZBfnrehfJD7YITXfFkXgDd-XRyEx78-bsJVWg-Ofhf575cqDGGny9ptOvFz/exec?v=misi"},"glif": "<circle cx=\"12\" cy=\"12\" r=\"8.2\"/><circle cx=\"12\" cy=\"12\" r=\"3.4\"/><path d=\"M12 1.8v2.4M12 19.8v2.4M1.8 12h2.4M19.8 12h2.4\"/>"},{"id": "wtu","nama": "WTU Push","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=wtu","dv": "wtu","glif": "<rect x=\"3.4\" y=\"5\" width=\"17.2\" height=\"15.4\" rx=\"2.6\"/><path d=\"M3.4 9.6h17.2M8.2 3.4v3.4M15.8 3.4v3.4\"/><path d=\"M7 13.4h3M13.6 13.4h3.4M7 16.8h3\"/><path d=\"M13.6 16.8h3.4\" stroke-dasharray=\"1.6 1.6\"/>"},{"id": "deal","nama": "Dealing","urls": {"ej": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyRhGFqK1aL6TevR9mE1DdsGZC9CC2TTKZPFEwEW9xf4oTPM9GLOPOOIW3uXyFMLk0bOA/exec?v=deal","bali": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbyPE92dAZBfnrehfJD7YITXfFkXgDd-XRyEx78-bsJVWg-Ofhf575cqDGGny9ptOvFz/exec?v=deal"},"glif": "<rect x=\"4.6\" y=\"2.8\" width=\"14.8\" height=\"18.4\" rx=\"2.6\"/><path d=\"M8 7h8\"/><path d=\"M8.6 11.6h.01M12 11.6h.01M15.4 11.6h.01M8.6 15.2h.01M12 15.2h.01M15.4 15.2h.01M8.6 18.4h3.4M15.4 18.4h.01\"/>"},{"id": "cam","nama": "GPS & SCAN Camera","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbw0O8Eyoexifm0RlIUCn0JYxjA4e1k_06Kn2nKu6yrf9to4M3I3D8TVxNfGk04ksmMq/exec","glif": "<path d=\"M3 8.6a2 2 0 0 1 2-2h2.3l1.3-2.2h6.8L16.7 6.6H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/><circle cx=\"12\" cy=\"12.8\" r=\"3.4\"/>"},{"id": "today","nama": "Today's Order","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=today","dv": "today","glif": "<path d=\"M5.4 7.6h13.2l-1 11.2a2 2 0 0 1-2 1.8H8.4a2 2 0 0 1-2-1.8z\"/><path d=\"M9 9.2V6.4a3 3 0 0 1 6 0v2.8\"/><path d=\"M9.6 13.6l1.8 1.8 3.2-3.4\"/>"},{"id": "growth","nama": "Growth Journey","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=growth","dv": "growth","glif": "<path d=\"M3.6 19.4h16.8\"/><path d=\"M6.4 19.4v-5.2M11 19.4V9.6M15.6 19.4v-7M20 19.4V5.8\"/>"},{"id": "dpd","nama": "DPD Watchlist","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=dpd","dv": "dpd","glif": "<path d=\"M12 3.2l8.4 3.4v5.1c0 4.4-3.3 7.9-8.4 9.1-5.1-1.2-8.4-4.7-8.4-9.1V6.6z\"/><path d=\"M12 8.6v4.2\"/><circle cx=\"12\" cy=\"16.2\" r=\".95\" fill=\"currentColor\" stroke=\"none\"/>"},{"id": "pareto","nama": "My Pareto","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=pareto","dv": "pareto","glif": "<path d=\"M3.6 19.6h16.8\"/><path d=\"M6.2 19.6V7.4M11 19.6v-4.2M15.8 19.6v-7.4M20 19.6V4.6\"/><path d=\"M3.6 12.6l4-5 4.6 4.4 7.4-7.6\" stroke-dasharray=\"2.6 2.4\"/>"},{"id": "chain","nama": "Pharmacy Chains","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=chain","dv": "chain","glif": "<path d=\"M3.6 9.4l1.9-5h13l1.9 5\"/><path d=\"M3.6 9.4a2.8 2.8 0 0 0 5.6 0 2.8 2.8 0 0 0 5.6 0 2.8 2.8 0 0 0 5.6 0\"/><path d=\"M5.2 12.2v8.4h13.6v-8.4\"/><path d=\"M10 20.6v-4.8h4v4.8\"/>"},{"id": "kredit","nama": "Unblock & CL Upgrade","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=kredit","dv": "kredit","glif": "<rect x=\"2.6\" y=\"5.4\" width=\"14.4\" height=\"10.4\" rx=\"2.2\"/><path d=\"M2.6 9h14.4M5.6 12.6h3.4\"/><path d=\"M19.6 20.6v-8.4M16.6 15.2l3-3 3 3\"/>"},{"id": "chat","nama": "SwipeRx Chat - AI","url": "https://wa.me/6285139572526","glif": "<path d=\"M20.6 11.6a8.4 8.4 0 0 1-12.4 7.4L3.6 20.4l1.5-4.4a8.4 8.4 0 1 1 15.5-4.4z\"/><path d=\"M8.9 9.4c0 3 2.4 5.4 5.4 5.4\"/>"},{"id": "rank","nama": "BLITZ Ranking","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbxlU3jEoT-GFGkcUJF22mbpe_qi_OKvodTvxz2XvrRuMYMcezhjI1hF75hn0GlN7HzFdg/exec?v=rank","dv": "rank","glif": "<path d=\"M7.4 21h9.2\"/><path d=\"M12 21v-3.6\"/><path d=\"M6.6 3.4h10.8v4.2a5.4 5.4 0 0 1-10.8 0z\"/><path d=\"M6.6 5h-2.4a3 3 0 0 0 3 3M17.4 5h2.4a3 3 0 0 1-3 3\"/>"},{"id": "jarvis","nama": "JARVIS","url": "https://datastudio.google.com/reporting/3e1607bd-dd79-47fc-b187-56cf749de2c2/page/p_xjmv4mhy2c","glif": "<circle cx=\"12\" cy=\"12\" r=\"8.4\"/><circle cx=\"12\" cy=\"12\" r=\"3.1\"/><path d=\"M12 3.6v2.6M12 17.8v2.6M3.6 12h2.6M17.8 12h2.6\"/>"},{"id": "enter","nama": "Enter JARVIS","url": "https://www.enterjarvis.com/","glif": "<path d=\"M14 3.4h4.2a2.4 2.4 0 0 1 2.4 2.4v12.4a2.4 2.4 0 0 1-2.4 2.4H14\"/><path d=\"M10.2 16.6l4.6-4.6-4.6-4.6M14.8 12H3.4\"/>"},{"id": "sales","nama": "Sales App","url": "https://sales-app.swiperx.com/","glif": "<rect x=\"6.2\" y=\"2.8\" width=\"11.6\" height=\"18.4\" rx=\"2.6\"/><path d=\"M10.4 5.6h3.2\"/><path d=\"M9.4 12.4l1.9 1.9 3.6-3.8\"/>"},{"id": "rekam","nama": "101 Recorder","url": "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbzLtgkYe_jNNwcuP9Pe3zBLHzG8Ke7TCr350S5HKF8TrJxFu8DhyviGeKo-36qCVALp/exec","glif": "<rect x=\"9\" y=\"2.8\" width=\"6\" height=\"11.4\" rx=\"3\"/><path d=\"M5.4 11a6.6 6.6 0 0 0 13.2 0M12 17.6v3.6M8.8 21.2h6.4\"/>"},{"id": "formesp","nama": "Form eSP","url": "https://docs.google.com/forms/d/e/1FAIpQLSeV6unUUvU-TuRn8uAv-Cpr-yWSgFp8ZdFv59TO9Uz2B4_UKw/viewform","glif": "<rect x=\"4.6\" y=\"2.8\" width=\"14.8\" height=\"18.4\" rx=\"2.6\"/><path d=\"M8.4 8h7.2M8.4 11.6h4.4\"/><path d=\"M8.2 17.4c1.1-1.7 2.1-1.7 2.7 0s1.7 1.7 2.7 0 1.9-1.5 2.6-.3\"/>"},{"id": "formaku","nama": "Form Akuisisi","url": "https://docs.google.com/forms/d/1iJkuyHI9CQqk47--7KZ6mKHI56RT0qvlMkJsrM6D4wQ/viewform","glif": "<rect x=\"4.6\" y=\"2.8\" width=\"14.8\" height=\"18.4\" rx=\"2.6\"/><path d=\"M8.4 8h7.2M8.4 11.6h4.4\"/><path d=\"M13.2 16.6h4.8M15.6 14.2v4.8\"/>"}];
+var MENU_GRUP = [["Numbers", ["exec", "today", "growth", "wtu", "pareto", "chain", "dpd", "rank"]], ["Field work", ["profil", "gmv", "price", "misi", "deal", "kredit", "opella", "cam", "rekam"]], ["Forms", ["formesp", "formaku"]], ["Links", ["chat", "jarvis", "enter", "sales"]]];
 var MENU_HOME = "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbwtU0N61bsjF8lmnbDSu0UTUua6yc--gjdrwS2S_S_f61OKOCe7_oCq6_BwjhvzPISC/exec";
 /* LACI MENU EJB — satu modul, dipakai SEMUA app EJB (disalin oleh
    scripts/sinkron-menu.py; sumbernya berkas ini — jangan sunting salinannya).
@@ -1223,9 +1252,67 @@ var MENU_HOME = "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbwtU0N
        versi  : function(){ return 'HnriCode V…'; },
        temaSistem: false                   // true kalau app mengikuti prefers-color-scheme
      });
-   Tombol ☰ memanggil laciBuka(). */
+   Tombol ☰ memanggil laciBuka().
+
+   TOMBOL JEMPOL (29-09-2026, Henri): tab kaca di TEPI layar berlogo SwipeRx,
+   melayang di tepi KANAN ±22% dari bawah — zona jempol tangan kanan (Hoober:
+   ±75% sentuhan HP pakai jempol; pojok kiri atas = zona terjauh). Membuka laci
+   dari sisi tombol itu. Geser naik-turun untuk memindah (diingat per HP);
+   pengguna kidal memindahnya ke kiri dari kaki laci. Meredup saat halaman
+   digulir supaya tidak menutupi angka. ☰ di kiri atas tetap ada. */
 var LACI = (function () {
-  var O = {}, siap = false, x0 = null;
+  var O = {}, siap = false, x0 = null, sisiBuka = 'kiri';
+  var LC_MERK = '<path d=\'M21.6882 18.954L17.3178 23.3205L12.9474 27.6909C12.3559 28.2824 11.5814 28.5782 10.8031 28.5782C10.0247 28.5782 9.25026 28.2824 8.65871 27.6909C8.06717 27.0994 7.7714 26.3249 7.7714 25.5466C7.7714 24.7721 8.06717 23.9938 8.65871 23.4022L13.0291 19.0318L17.3995 14.6614C17.9911 14.0698 18.7655 13.7741 19.5439 13.7741C20.3222 13.7741 21.0967 14.0698 21.6882 14.6614C22.2798 15.2529 22.5755 16.0274 22.5755 16.8057C22.5755 17.5841 22.2798 18.3624 21.6882 18.954Z\' fill=\'#1733DE\'/><path d=\'M27.8371 20.822C27.2456 20.2304 26.4711 19.9347 25.6928 19.9347C24.9183 19.9347 24.14 20.2304 23.5485 20.822L19.1819 25.1885L14.8115 29.5589C14.22 30.1505 13.9242 30.9249 13.9242 31.7033C13.9242 32.4777 14.22 33.2561 14.8115 33.8476C15.4031 34.4391 16.1775 34.7349 16.9559 34.7349C17.7342 34.7349 18.5087 34.4391 19.1002 33.8476L23.4667 29.4772L27.8371 25.1068C28.4287 24.5152 28.7245 23.7408 28.7245 22.9624C28.7245 22.1841 28.4287 21.4135 27.8371 20.822Z\' fill=\'#C259B7\'/><path d=\'M34.2196 27.2044C33.628 26.6129 32.8536 26.3171 32.0752 26.3171C31.3008 26.3171 30.5224 26.6129 29.9309 27.2044L25.5644 31.5748L21.194 35.9413C20.6024 36.5329 20.3066 37.3112 20.3066 38.0857C20.3066 38.8601 20.6024 39.6385 21.194 40.23C21.7855 40.8216 22.56 41.1173 23.3383 41.1173C24.1167 41.1173 24.8911 40.8216 25.4826 40.23L29.8492 35.8596L34.2196 31.4892C34.8111 30.8977 35.1069 30.1232 35.1069 29.3449C35.1069 28.5704 34.8111 27.796 34.2196 27.2044Z\' fill=\'#FF7F30\'/><path d=\'M23.6496 6.09957L23.6146 6.06454L23.5796 6.02952L23.0581 5.50413L22.5366 4.97875C20.1315 2.32848 16.8819 0.904108 13.574 0.744548C10.266 0.584987 6.89575 1.68245 4.24549 4.08754C1.59911 6.48874 0.174738 9.73444 0.0151775 13.0424C-0.144383 16.3504 0.953084 19.7206 3.35817 22.3709L4.07425 23.087L4.79033 23.803L4.9927 24.0054L10.7019 18.2495L16.5862 12.4042C17.2088 11.8048 18.0144 11.5091 18.8161 11.513C19.6178 11.5207 20.4195 11.8282 21.0305 12.4392L28.7712 20.1876L36.5118 27.9283C37.1306 28.5471 37.9401 28.8584 38.7534 28.8584C39.5629 28.8584 40.3763 28.5471 40.9951 27.9283C41.6139 27.3095 41.9252 26.5 41.9252 25.6866C41.9252 24.8772 41.6139 24.0638 40.9951 23.445L32.3204 14.7703L23.6496 6.09957Z\' fill=\'#14C47D\'/><path d=\'M46.2295 4.65963C43.7037 2.13389 40.3257 0.802923 36.9477 0.736763C33.5697 0.670604 30.1955 1.87315 27.6659 4.39888L26.9265 5.13831L26.1871 5.87774L35.426 15.1167L44.665 24.3557L45.7741 23.2465L46.8833 22.1374C49.0587 19.5961 50.0978 16.4282 49.9928 13.2954C49.8877 10.1625 48.6346 7.06471 46.2295 4.65963Z\' fill=\'#14C47D\'/>';
+  var LC_KUNCI = 'ejb.laci.jempol';                 // {sisi:'kanan'|'kiri', y: 0..1 dari bawah}
+  function lcPosisi(){
+    var d = { sisi: 'kanan', y: 0.22 };
+    try { var v = JSON.parse(localStorage.getItem(LC_KUNCI) || 'null'); if (v && (v.sisi === 'kiri' || v.sisi === 'kanan')) d = { sisi: v.sisi, y: Math.min(0.8, Math.max(0.08, +v.y || 0.22)) }; } catch (e) {}
+    return d;
+  }
+  function lcSimpan(p){ try { localStorage.setItem(LC_KUNCI, JSON.stringify(p)); } catch (e) {} }
+  function lcTaruhFab(){
+    var f = lcEl('lcFab'); if (!f) return;
+    var p = lcPosisi(), h = window.innerHeight || 700;
+    f.classList.toggle('lc-fab-kiri', p.sisi === 'kiri');
+    f.style.top = Math.round(h - p.y * h - 28) + 'px';
+  }
+  function lcFabPasang(){
+    var f = document.createElement('button');
+    f.type = 'button'; f.className = 'lc-fab'; f.id = 'lcFab';
+    f.setAttribute('aria-label', 'Menu EJB'); f.setAttribute('aria-controls', 'lcLaci'); f.setAttribute('aria-expanded', 'false');
+    f.innerHTML = '<svg viewBox="0 0 50 42" fill="none" aria-hidden="true" focusable="false">' + LC_MERK + '</svg>';
+    document.body.appendChild(f);
+    lcTaruhFab();
+    /* Ketuk = buka; tahan lalu geser (>8px) = pindah naik-turun. Pointer
+       events: satu jalur untuk jari dan mouse. */
+    var y0 = null, top0 = 0, geser = false;
+    f.addEventListener('pointerdown', function (e) { y0 = e.clientY; top0 = f.offsetTop; geser = false; try { f.setPointerCapture(e.pointerId); } catch (x) {} });
+    f.addEventListener('pointermove', function (e) {
+      if (y0 === null) return;
+      var dy = e.clientY - y0;
+      if (!geser && Math.abs(dy) > 8) { geser = true; f.classList.add('lc-fab-geser'); }
+      if (geser) { var h = window.innerHeight; f.style.top = Math.max(0.2 * h - 28, Math.min(0.92 * h - 28, top0 + dy)) + 'px'; }
+    });
+    f.addEventListener('pointerup', function () {
+      if (y0 === null) return;
+      y0 = null;
+      if (geser) {
+        f.classList.remove('lc-fab-geser');
+        var h = window.innerHeight, p = lcPosisi();
+        p.y = (h - (f.offsetTop + 28)) / h; lcSimpan(p); lcTaruhFab();
+      } else lcBuka(lcPosisi().sisi);
+    });
+    f.addEventListener('pointercancel', function () { y0 = null; f.classList.remove('lc-fab-geser'); lcTaruhFab(); });
+    window.addEventListener('resize', lcTaruhFab);
+    var t = null;
+    window.addEventListener('scroll', function () {
+      f.classList.add('lc-fab-redup'); clearTimeout(t);
+      t = setTimeout(function () { f.classList.remove('lc-fab-redup'); }, 700);
+    }, { passive: true, capture: true });
+  }
+  function lcPindahSisi(){
+    var p = lcPosisi(); p.sisi = p.sisi === 'kanan' ? 'kiri' : 'kanan'; lcSimpan(p); lcTaruhFab(); lcTutup();
+  }
 
   function lcEl(i){ return document.getElementById(i); }
   function lcEsc(s){
@@ -1281,8 +1368,10 @@ var LACI = (function () {
       });
     });
     h += '</div>';
-    var v = lcPanggil(O.versi, '');
-    if (v) h += '<div class="lc-kaki">' + lcEsc(v) + '</div>';
+    var v = lcPanggil(O.versi, ''), ps = lcPosisi();
+    h += '<div class="lc-kaki"><button type="button" class="lc-sisi" id="lcSisi">' +
+         (ps.sisi === 'kanan' ? '\u21C7 Tombol menu ke kiri' : 'Tombol menu ke kanan \u21C9') + '</button>' +
+         (v ? '<span>' + lcEsc(v) + '</span>' : '') + '</div>';
     lcEl('lcLaci').innerHTML = h;
   }
 
@@ -1295,8 +1384,10 @@ var LACI = (function () {
     a.className = 'lc-laci' + (O.temaSistem ? ' lc-sistem' : ''); a.id = 'lcLaci';
     a.setAttribute('aria-label', 'Semua menu EJB'); a.setAttribute('aria-hidden', 'true');
     document.body.appendChild(t); document.body.appendChild(a);
+    lcFabPasang();
     t.addEventListener('click', lcTutup);
     a.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('#lcSisi')) { lcPindahSisi(); return; }
       var k = e.target.closest ? e.target.closest('a.lc-item[data-id]') : null;
       if (!k || !O.pindah) return;
       var m = null;
@@ -1306,18 +1397,32 @@ var LACI = (function () {
       if (ditangani) { e.preventDefault(); lcTutup(); }
     });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && lcTerbuka()) lcTutup(); });
-    /* Geser ke kiri menutup laci — gerakan yang sama dengan app HP. */
+    /* Geser ke arah tepinya menutup laci (kiri untuk laci kiri, kanan untuk laci kanan). */
     document.addEventListener('touchstart', function (e) { x0 = lcTerbuka() ? e.touches[0].clientX : null; }, { passive: true });
     document.addEventListener('touchend', function (e) {
-      if (x0 !== null && e.changedTouches[0].clientX - x0 < -60) lcTutup();
+      if (x0 === null) return;
+      var dx = e.changedTouches[0].clientX - x0;
+      if ((sisiBuka === 'kanan' && dx > 60) || (sisiBuka !== 'kanan' && dx < -60)) lcTutup();
       x0 = null;
     }, { passive: true });
   }
   function lcTerbuka(){ return document.documentElement.classList.contains('lc-buka'); }
-  function lcBuka(){
+  function lcBuka(sisi){
     if (!siap) lcPasang(O);
+    sisiBuka = (sisi === 'kanan') ? 'kanan' : 'kiri';     // ☰ (tanpa argumen) = kiri, tombol jempol = sisinya
+    var laci = lcEl('lcLaci'), html = document.documentElement;
+    if (html.classList.contains('lc-kanan') !== (sisiBuka === 'kanan')) {
+      /* Ganti sisi TANPA animasi, lalu baru dibuka: kalau tidak, laci yang
+         terakhir diparkir di kanan meluncur masuk dari kanan waktu ☰ kiri ditekan. */
+      laci.style.transition = 'none';
+      html.classList.toggle('lc-kanan', sisiBuka === 'kanan');
+      void laci.offsetWidth;
+      laci.style.transition = '';
+    }
     lcGambar();
-    document.documentElement.classList.add('lc-buka');
+    void laci.offsetWidth;
+    html.classList.add('lc-buka');
+    if (lcEl('lcFab')) lcEl('lcFab').setAttribute('aria-expanded', 'true');
     lcEl('lcLaci').setAttribute('aria-hidden', 'false');
     if (O.tombol && lcEl(O.tombol)) lcEl(O.tombol).setAttribute('aria-expanded', 'true');
     var on = lcEl('lcLaci').querySelector('.lc-aktif');
@@ -1326,11 +1431,12 @@ var LACI = (function () {
   function lcTutup(){
     document.documentElement.classList.remove('lc-buka');
     if (lcEl('lcLaci')) lcEl('lcLaci').setAttribute('aria-hidden', 'true');
+    if (lcEl('lcFab')) lcEl('lcFab').setAttribute('aria-expanded', 'false');
     if (O.tombol && lcEl(O.tombol)) lcEl(O.tombol).setAttribute('aria-expanded', 'false');
   }
   return { pasang: lcPasang, buka: lcBuka, tutup: lcTutup };
 })();
-function laciBuka(){ LACI.buka(); }
+function laciBuka(){ LACI.buka('kiri'); }
 /* MENU-EJB:SELESAI */
 
 /* Laci menu. Halaman ini tidak tahu siapa penggunanya (tidak ada login di

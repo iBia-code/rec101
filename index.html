@@ -637,6 +637,28 @@ audio{width:100%;margin:0 0 14px;display:block}
 .lc-kaki{display:flex;flex-direction:column;gap:6px}
 .lc-sisi{align-self:flex-start;border:0;cursor:pointer;padding:8px 12px;min-height:36px;border-radius:12px;
   background:var(--lc-fill);color:var(--lc-txt2);font:800 12px/1.2 'Nunito Sans',-apple-system,sans-serif}
+/* PETUNJUK SEKALI JALAN (29-09-2026): gelembung kaca di sebelah tab + tab berdenyut. */
+.lc-hint{position:fixed;right:44px;z-index:2147481999;max-width:min(250px,calc(100vw - 72px));padding:11px 14px 12px;
+  border-radius:16px 16px 6px 16px;color:#fff;font:400 12.5px/1.4 'Nunito Sans',-apple-system,sans-serif;
+  background:linear-gradient(to bottom,rgba(20,196,125,.34),rgba(14,16,22,.40));
+  -webkit-backdrop-filter:blur(14px) saturate(190%);backdrop-filter:blur(14px) saturate(190%);
+  border:.5px solid rgba(255,255,255,.26);box-shadow:0 14px 34px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.25);
+  opacity:0;transform:translateX(12px) scale(.96);transform-origin:right center;pointer-events:none;cursor:pointer;
+  transition:opacity .3s ease,transform .45s cubic-bezier(.2,.9,.3,1.25)}
+.lc-hint > b{display:block;font-weight:900;font-size:15px;margin-bottom:2px}
+.lc-hint > span{display:block;color:var(--lc-hint-t2,rgba(255,255,255,.88));font-weight:700}
+.lc-hint::after{content:'';position:absolute;right:-7px;top:50%;margin-top:-7px;border:7px solid transparent;border-right:0;
+  border-left-color:rgba(20,120,90,.55)}
+.lc-hint.lc-hint-kiri{right:auto;left:44px;border-radius:16px 16px 16px 6px;transform:translateX(-12px) scale(.96);transform-origin:left center}
+.lc-hint.lc-hint-kiri::after{right:auto;left:-7px;border:7px solid transparent;border-left:0;border-right-color:rgba(20,120,90,.55)}
+.lc-hint.lc-hint-on{opacity:1;transform:none;pointer-events:auto}
+:root[data-theme="light"] .lc-hint, body.light .lc-hint{color:#05070A;
+  background:linear-gradient(to bottom,rgba(214,248,232,.80),rgba(255,255,255,.66));border-color:rgba(0,0,0,.08);
+  --lc-hint-t2:rgba(6,9,14,.82)}
+.lc-fab.lc-fab-sorot{animation:lcSorot 1.6s ease-out infinite}
+@keyframes lcSorot{0%{box-shadow:-6px 8px 22px rgba(0,0,0,.28),0 0 0 0 rgba(20,196,125,.65)}
+  70%{box-shadow:-6px 8px 22px rgba(0,0,0,.28),0 0 0 14px rgba(20,196,125,0)}100%{box-shadow:-6px 8px 22px rgba(0,0,0,.28),0 0 0 0 rgba(20,196,125,0)}}
+@media (prefers-reduced-motion:reduce){.lc-hint{transition:none}.lc-fab.lc-fab-sorot{animation:none;box-shadow:0 0 0 3px rgba(20,196,125,.7)}}
 /* LACI-EJB:CSS:SELESAI */
 </style>
 </head>
@@ -1300,15 +1322,57 @@ var LACI = (function () {
         f.classList.remove('lc-fab-geser');
         var h = window.innerHeight, p = lcPosisi();
         p.y = (h - (f.offsetTop + 28)) / h; lcSimpan(p); lcTaruhFab();
-      } else lcBuka(lcPosisi().sisi);
+      } else { lcHintSelesai(); lcBuka(lcPosisi().sisi); }
     });
     f.addEventListener('pointercancel', function () { y0 = null; f.classList.remove('lc-fab-geser'); lcTaruhFab(); });
+    setTimeout(lcHint, 1200);
     window.addEventListener('resize', lcTaruhFab);
     var t = null;
     window.addEventListener('scroll', function () {
       f.classList.add('lc-fab-redup'); clearTimeout(t);
       t = setTimeout(function () { f.classList.remove('lc-fab-redup'); }, 700);
     }, { passive: true, capture: true });
+  }
+  /* Nama panggilan (29-09-2026, Henri: "call the user by short name … personal
+     connection"): kata pertama nama, huruf besar-kecil dirapikan ("ZIdane" ->
+     "Zidane", "Agus Romadlon" -> "Agus"). Email -> bagian depan. "Vacant …" =
+     bukan orang -> kosong, sapaan jadi "Hai" saja. */
+  function lcNamaPendek(nama){
+    var t = String(nama || '').split('@')[0].split(/[\s._-]+/).filter(Boolean)[0] || '';
+    if (!t || /^vacant$/i.test(t)) return '';
+    return t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
+  }
+  function lcEn(){ return /^en/i.test(document.documentElement.getAttribute('lang') || ''); }
+  /* PETUNJUK SEKALI JALAN: ☰ sudah dibuang, jadi tab tepi harus menemukan
+     orangnya — gelembung kaca di sebelah tab + tab berdenyut, 3 kali buka app
+     pertama (per app, localStorage) atau sampai tab diketuk sekali. */
+  var LC_HINT = 'ejb.laci.hint';
+  function lcHintSudah(){ try { var v = localStorage.getItem(LC_HINT); return v === 'selesai' || (+v || 0) >= 3; } catch (e) { return true; } }
+  function lcHintSelesai(){ try { localStorage.setItem(LC_HINT, 'selesai'); } catch (e) {} lcHintTutup(); }
+  function lcHintTutup(){
+    var b = lcEl('lcHint'), f = lcEl('lcFab');
+    if (f) f.classList.remove('lc-fab-sorot');
+    if (b) { b.classList.remove('lc-hint-on'); setTimeout(function () { if (b.parentNode) b.parentNode.removeChild(b); }, 350); }
+  }
+  function lcHint(){
+    if (lcHintSudah() || lcEl('lcHint')) return;
+    var f = lcEl('lcFab'); if (!f) return;
+    try { localStorage.setItem(LC_HINT, String((+localStorage.getItem(LC_HINT) || 0) + 1)); } catch (e) {}
+    var p = lcPanggil(O.profil, null) || {}, n = lcNamaPendek(p.nama), en = lcEn(), kiri = lcPosisi().sisi === 'kiri';
+    var b = document.createElement('div');
+    b.className = 'lc-hint' + (kiri ? ' lc-hint-kiri' : ''); b.id = 'lcHint'; b.setAttribute('role', 'status');
+    b.innerHTML = '<b>' + lcEsc((en ? 'Hi' : 'Hai') + (n ? ' ' + n : '')) + ' \uD83D\uDC4B</b>' +
+      '<span>' + lcEsc(en ? 'The EJB menu lives here now. Tap it, or drag it to where your thumb rests.'
+                          : 'Menu EJB sekarang di sini. Ketuk, atau geser naik-turun biar pas di jempolmu.') + '</span>';
+    document.body.appendChild(b);
+    var r = f.getBoundingClientRect();
+    b.style.top = Math.max(12, Math.round(r.top + r.height / 2 - b.offsetHeight / 2)) + 'px';
+    f.classList.add('lc-fab-sorot');
+    requestAnimationFrame(function () { b.classList.add('lc-hint-on'); });
+    b.addEventListener('click', function () { lcHintSelesai(); lcBuka(lcPosisi().sisi); });
+    var tutupKetuk = function (e) { if (!b.contains(e.target) && e.target !== f) { lcHintTutup(); document.removeEventListener('pointerdown', tutupKetuk, true); } };
+    document.addEventListener('pointerdown', tutupKetuk, true);
+    setTimeout(lcHintTutup, 8000);
   }
   function lcPindahSisi(){
     var p = lcPosisi(); p.sisi = p.sisi === 'kanan' ? 'kiri' : 'kanan'; lcSimpan(p); lcTaruhFab(); lcTutup();
@@ -1345,8 +1409,10 @@ var LACI = (function () {
     var p = lcPanggil(O.profil, null);
     var h = '';
     if (p && p.nama) {
+      var np = lcNamaPendek(p.nama);
       h += '<div class="lc-profil"><div class="lc-ava">' + lcEsc(lcInisial(p.nama)) + '</div>' +
-           '<div class="lc-pt"><b>' + lcEsc(p.nama) + '</b>' + (p.sub ? '<span>' + lcEsc(p.sub) + '</span>' : '') + '</div></div>';
+           '<div class="lc-pt"><b>' + lcEsc((lcEn() ? 'Hi' : 'Hai') + (np ? ', ' + np : '')) + ' \uD83D\uDC4B</b>' +
+           '<span>' + lcEsc(p.nama) + (p.sub ? ' \u00B7 ' + lcEsc(p.sub) : '') + '</span></div></div>';
     }
     /* <div role="navigation">, BUKAN <nav>: Cockpit punya aturan global
        `nav{position:sticky; latar pekat …}` untuk bilahnya sendiri,
@@ -1384,6 +1450,10 @@ var LACI = (function () {
     a.className = 'lc-laci' + (O.temaSistem ? ' lc-sistem' : ''); a.id = 'lcLaci';
     a.setAttribute('aria-label', 'Semua menu EJB'); a.setAttribute('aria-hidden', 'true');
     document.body.appendChild(t); document.body.appendChild(a);
+    /* ☰ DIBUANG (29-09-2026, Henri): tab jempol kanan jadi satu-satunya pintu.
+       Disembunyikan di sini, bukan dihapus dari 7 app — satu baris untuk
+       mengembalikannya. */
+    if (O.tombol && lcEl(O.tombol)) lcEl(O.tombol).style.display = 'none';
     lcFabPasang();
     t.addEventListener('click', lcTutup);
     a.addEventListener('click', function (e) {

@@ -612,43 +612,68 @@ audio{width:100%;margin:0 0 14px;display:block}
 .lc-kanan .lc-laci{left:auto;right:0;border-radius:26px 0 0 26px;border-left:.5px solid var(--lc-stroke-hi);border-right:0;
   box-shadow:var(--lc-lift),var(--lc-rim),-18px 0 44px rgba(0,0,0,.30);transform:translateX(106%)}
 .lc-buka.lc-kanan .lc-laci{transform:none}
-/* TOMBOL JEMPOL = TAB TEPI (29-09-2026). Versi bundar 54px menutupi angka yang
-   rata kanan (GAP, CM) — tab 36x56 menempel di tepi layar cuma memakan margin,
-   tetap di zona jempol (posisi naik-turun dari JS). Bahan sama dengan pegangan
-   laci bagian Profil Apotek yang disukai Henri: kecil & tembus pandang. */
-.lc-fab{position:fixed;right:0;top:70%;z-index:2147481999;width:30px;height:54px;padding:0 0 0 3px;
-  border-radius:18px 0 0 18px;display:grid;place-items:center;cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent;
-  border:.5px solid rgba(255,255,255,.20);border-right:0;
-  background:linear-gradient(to bottom,rgba(22,24,30,.40),rgba(22,24,30,.20));
-  -webkit-backdrop-filter:blur(12px) saturate(190%);backdrop-filter:blur(12px) saturate(190%);
-  box-shadow:-6px 8px 22px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.20);
-  transition:opacity .25s linear,width .18s cubic-bezier(.2,.9,.3,1.3),box-shadow .2s}
-.lc-fab svg{width:20px;height:17px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
-/* AREA KETUK TAK TERLIHAT (30-09-2026, Henri: "susah diklik di Android").
-   Tab 30px menempel di tepi kanan jatuh DI DALAM zona gestur "kembali" Android
-   (±20-30dp dari tiap sisi): sentuhan yang mulai di situ lalu bergeser sedikit
-   diambil sistem (pointercancel) — tab tidak terbuka, kadang malah "back".
-   Pseudo-elemen ini memperluas area ketuk ke KIRI jadi ±52x76px (Android minta
-   >= 48dp) tanpa mengubah rupa tab, supaya jempol bisa mendarat DI LUAR zona
-   gestur. Sengaja tidak lebih lebar: kolom angka rata kanan (GAP, CM) dimulai
-   ±30px dari tepi, dan area ketuk yang lebih besar mulai mencuri ketukannya. */
-.lc-fab::before{content:'';position:absolute;top:-11px;bottom:-11px;right:0;width:52px}
-.lc-fab.lc-fab-kiri::before{right:auto;left:0}
-.lc-fab.lc-fab-kiri{right:auto;left:0;padding:0 3px 0 0;border-radius:0 18px 18px 0;border:.5px solid rgba(255,255,255,.20);border-left:0;
-  box-shadow:6px 8px 22px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.20)}
-.lc-fab:active,.lc-fab.lc-fab-geser{width:42px}
+/* TOMBOL JEMPOL = TOMBOL BUNDAR MELAYANG (30-09-2026, Henri memilih ini).
+   Sejarahnya: 29-09 bundar 54px ditolak karena menutupi angka rata kanan (GAP,
+   CM), diganti tab 30px yang MENEMPEL di tepi. Di Android tab tepi itu gagal:
+   tepi kanan = zona gestur "kembali" (±20-30dp), sistem mengambil sentuhannya
+   (pointercancel), dan area ketuk tak terlihat 52px pun tidak menolong — jari
+   tetap MENGINCAR yang terlihat, yaitu tepinya. Jadi tombolnya dipindah KELUAR
+   zona gestur: 56px, 16px dari tepi (pola FAB Android). Angka yang tertutup
+   diatasi dengan meredup saat menggulir + bisa digeser naik-turun. */
+.lc-fab{position:fixed;right:16px;top:70%;z-index:2147481999;width:56px;height:56px;padding:0;
+  border-radius:50%;display:grid;place-items:center;cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent;
+  border:.5px solid rgba(255,255,255,.26);
+  /* Lebih bening (30-09, Henri: "more transparent"): cat .16->.05 + blur 8px —
+     angka di belakangnya tetap terbaca, logo yang memberi bentuk. */
+  background:linear-gradient(to bottom,rgba(22,24,30,.16),rgba(22,24,30,.05));
+  -webkit-backdrop-filter:blur(8px) saturate(180%);backdrop-filter:blur(8px) saturate(180%);
+  box-shadow:0 6px 16px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.28);
+  transition:opacity .25s linear,transform .18s cubic-bezier(.2,.9,.3,1.3),box-shadow .2s}
+.lc-fab svg{width:28px;height:24px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
+/* Cincin ketuk 6px di sekeliling tombol: jempol yang meleset sedikit tetap kena. */
+.lc-fab::before{content:'';position:absolute;inset:-6px;border-radius:50%}
+.lc-fab.lc-fab-kiri{right:auto;left:16px}
+.lc-fab:active{transform:scale(.92)}
+.lc-fab.lc-fab-geser{transform:scale(1.08)}
+/* Selama digeser (pegas + cairan): transform ditulis rAF tiap bingkai — transisi
+   CSS di atasnya membuat regangan tertinggal/goyah, jadi dimatikan. Badan tombol
+   bening TOTAL: yang memberi bentuk adalah lapisan cair .lc-goo di bawahnya. */
+.lc-fab.lc-fab-cair{transition:opacity .25s linear;background:transparent;border-color:rgba(255,255,255,.18);
+  -webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
+.lc-goo{position:fixed;top:0;right:0;width:120px;height:100%;pointer-events:none;z-index:2147481998;opacity:0;transition:opacity .25s linear;overflow:visible}
+.lc-goo.lc-goo-kiri{right:auto;left:0}
+.lc-goo.lc-goo-on{opacity:.55}
 .lc-fab.lc-fab-redup{opacity:.45}
 .lc-buka .lc-fab{opacity:0;pointer-events:none}
 :root[data-theme="light"] .lc-fab, body.light .lc-fab{border-color:rgba(0,0,0,.10);
-  background:linear-gradient(to bottom,rgba(255,255,255,.62),rgba(255,255,255,.40));
-  box-shadow:-6px 8px 20px rgba(16,22,38,.16),inset 0 1px 0 rgba(255,255,255,.8)}
-@media (prefers-reduced-motion:reduce){.lc-fab{transition:none}}
+  background:linear-gradient(to bottom,rgba(255,255,255,.34),rgba(255,255,255,.14));
+  box-shadow:0 6px 16px rgba(16,22,38,.12),inset 0 1px 0 rgba(255,255,255,.8)}
+/* KILAU saat disentuh (30-09, Henri: "shine or glitter as user touch it").
+   Pita cahaya menyapu tombol — di dalam .lc-kilau yang overflow:hidden SENDIRI,
+   bukan di tombolnya: overflow:hidden di tombol akan memotong cincin ketuk
+   ::before (inset -6px) dan area ketuknya ikut mengecil. */
+.lc-kilau{position:absolute;inset:0;border-radius:50%;overflow:hidden;pointer-events:none}
+.lc-kilau::after{content:'';position:absolute;top:-20%;bottom:-20%;left:0;width:60%;transform:translateX(-160%) skewX(-18deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.85),transparent)}
+.lc-fab.lc-fab-kilau .lc-kilau::after{animation:lcSapu .55s ease-out}
+@keyframes lcSapu{to{transform:translateX(260%) skewX(-18deg)}}
+/* KERLIP: bintang kecil warna logo memercik dari titik sentuh. Ditempel ke BODY
+   (position:fixed), bukan ke tombol — ketukan membuka laci dan tombolnya memudar
+   (.lc-buka .lc-fab opacity 0), kerlip di dalamnya akan ikut hilang seketika. */
+/* --dx/--dy diisi JS per bintang; nilai bawaan di sini supaya audit token Cockpit
+   melihatnya terdeklarasi, dan bintang tanpa nilai JS diam di tempat, bukan rusak. */
+.lc-kerlip{--dx:0px;--dy:0px;position:fixed;z-index:2147483000;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;pointer-events:none;
+  clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);
+  animation:lcKerlip .7s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes lcKerlip{0%{transform:translate(0,0) scale(.3) rotate(0);opacity:1}
+  60%{opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1.1) rotate(160deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){.lc-fab{transition:none}.lc-fab.lc-fab-kilau .lc-kilau::after{animation:none}.lc-kerlip{display:none}.lc-goo{display:none}}
 @media print{.lc-fab{display:none}}
 .lc-kaki{display:flex;flex-direction:column;gap:6px}
 .lc-sisi{align-self:flex-start;border:0;cursor:pointer;padding:8px 12px;min-height:36px;border-radius:12px;
   background:var(--lc-fill);color:var(--lc-txt2);font:800 12px/1.2 'Nunito Sans',-apple-system,sans-serif}
 /* PETUNJUK SEKALI JALAN (29-09-2026): gelembung kaca di sebelah tab + tab berdenyut. */
-.lc-hint{position:fixed;right:44px;z-index:2147481999;max-width:min(250px,calc(100vw - 72px));padding:11px 14px 12px;
+.lc-hint{position:fixed;right:84px;z-index:2147481999;max-width:min(250px,calc(100vw - 104px));padding:11px 14px 12px;
   border-radius:16px 16px 6px 16px;color:#fff;font:400 12.5px/1.4 'Nunito Sans',-apple-system,sans-serif;
   background:linear-gradient(to bottom,rgba(20,196,125,.34),rgba(14,16,22,.40));
   -webkit-backdrop-filter:blur(14px) saturate(190%);backdrop-filter:blur(14px) saturate(190%);
@@ -659,15 +684,15 @@ audio{width:100%;margin:0 0 14px;display:block}
 .lc-hint > span{display:block;color:var(--lc-hint-t2,rgba(255,255,255,.88));font-weight:700}
 .lc-hint::after{content:'';position:absolute;right:-7px;top:50%;margin-top:-7px;border:7px solid transparent;border-right:0;
   border-left-color:rgba(20,120,90,.55)}
-.lc-hint.lc-hint-kiri{right:auto;left:44px;border-radius:16px 16px 16px 6px;transform:translateX(-12px) scale(.96);transform-origin:left center}
+.lc-hint.lc-hint-kiri{right:auto;left:84px;border-radius:16px 16px 16px 6px;transform:translateX(-12px) scale(.96);transform-origin:left center}
 .lc-hint.lc-hint-kiri::after{right:auto;left:-7px;border:7px solid transparent;border-left:0;border-right-color:rgba(20,120,90,.55)}
 .lc-hint.lc-hint-on{opacity:1;transform:none;pointer-events:auto}
 :root[data-theme="light"] .lc-hint, body.light .lc-hint{color:#05070A;
   background:linear-gradient(to bottom,rgba(214,248,232,.80),rgba(255,255,255,.66));border-color:rgba(0,0,0,.08);
   --lc-hint-t2:rgba(6,9,14,.82)}
 .lc-fab.lc-fab-sorot{animation:lcSorot 1.6s ease-out infinite}
-@keyframes lcSorot{0%{box-shadow:-6px 8px 22px rgba(0,0,0,.28),0 0 0 0 rgba(20,196,125,.65)}
-  70%{box-shadow:-6px 8px 22px rgba(0,0,0,.28),0 0 0 14px rgba(20,196,125,0)}100%{box-shadow:-6px 8px 22px rgba(0,0,0,.28),0 0 0 0 rgba(20,196,125,0)}}
+@keyframes lcSorot{0%{box-shadow:0 8px 22px rgba(0,0,0,.30),0 0 0 0 rgba(20,196,125,.65)}
+  70%{box-shadow:0 8px 22px rgba(0,0,0,.30),0 0 0 14px rgba(20,196,125,0)}100%{box-shadow:0 8px 22px rgba(0,0,0,.30),0 0 0 0 rgba(20,196,125,0)}}
 @media (prefers-reduced-motion:reduce){.lc-hint{transition:none}.lc-fab.lc-fab-sorot{animation:none;box-shadow:0 0 0 3px rgba(20,196,125,.7)}}
 /* LACI-EJB:CSS:SELESAI */
 </style>
@@ -1286,7 +1311,8 @@ var MENU_HOME = "https://script.google.com/a/macros/swiperxapp.com/s/AKfycbwtU0N
      });
    Tombol ☰ memanggil laciBuka().
 
-   TOMBOL JEMPOL (29-09-2026, Henri): tab kaca di TEPI layar berlogo SwipeRx,
+   TOMBOL JEMPOL (29-09-2026, Henri; 30-09 jadi bundar 56px 16px dari tepi —
+   tab yang menempel di tepi kalah oleh zona gestur Android): kaca berlogo SwipeRx,
    melayang di tepi KANAN ±22% dari bawah — zona jempol tangan kanan (Hoober:
    ±75% sentuhan HP pakai jempol; pojok kiri atas = zona terjauh). Membuka laci
    dari sisi tombol itu. Geser naik-turun untuk memindah (diingat per HP);
@@ -1312,7 +1338,7 @@ var LACI = (function () {
     var f = document.createElement('button');
     f.type = 'button'; f.className = 'lc-fab'; f.id = 'lcFab';
     f.setAttribute('aria-label', 'Menu EJB'); f.setAttribute('aria-controls', 'lcLaci'); f.setAttribute('aria-expanded', 'false');
-    f.innerHTML = '<svg viewBox="0 0 50 42" fill="none" aria-hidden="true" focusable="false">' + LC_MERK + '</svg>';
+    f.innerHTML = '<span class="lc-kilau" aria-hidden="true"></span><svg viewBox="0 0 50 42" fill="none" aria-hidden="true" focusable="false">' + LC_MERK + '</svg>';
     document.body.appendChild(f);
     lcTaruhFab();
     /* Ketuk = buka; tahan lalu geser (>8px) = pindah naik-turun. Pointer
@@ -1326,28 +1352,104 @@ var LACI = (function () {
       // Getar pendek = tanda ketukan diterima (Android). iOS mengabaikannya.
       try { if (navigator.vibrate) navigator.vibrate(8); } catch (x) {}
     }
-    f.addEventListener('pointerdown', function (e) { y0 = e.clientY; top0 = f.offsetTop; geser = false; t0 = Date.now(); try { f.setPointerCapture(e.pointerId); } catch (x) {} });
+    /* Kilau + kerlip di pointerdown, BUKAN di ketukan selesai: jawabannya harus
+       terasa saat jari MENYENTUH, termasuk sentuhan yang lalu jadi geseran. */
+    var LC_WARNA = ['#14C47D', '#1733DE', '#C259B7', '#FF7F30', '#FFFFFF', '#14C47D', '#FF7F30', '#FFFFFF'];
+    function lcKilau(){
+      f.classList.remove('lc-fab-kilau'); void f.offsetWidth; f.classList.add('lc-fab-kilau');
+      var r = f.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      for (var i = 0; i < LC_WARNA.length; i++) {
+        var k = document.createElement('i'), a = (i / LC_WARNA.length) * 2 * Math.PI + Math.random() * 0.5, d = 34 + Math.random() * 22;
+        k.className = 'lc-kerlip'; k.style.left = cx + 'px'; k.style.top = cy + 'px'; k.style.background = LC_WARNA[i];
+        k.style.setProperty('--dx', Math.round(Math.cos(a) * d) + 'px'); k.style.setProperty('--dy', Math.round(Math.sin(a) * d) + 'px');
+        k.style.animationDelay = Math.round(Math.random() * 60) + 'ms';
+        document.body.appendChild(k);
+        (function (el) { setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 900); })(k);
+      }
+    }
+    f.addEventListener('pointerdown', function (e) { y0 = e.clientY; top0 = f.offsetTop; geser = false; t0 = Date.now(); lcKilau(); try { f.setPointerCapture(e.pointerId); } catch (x) {} });
+    /* GESER = PEGAS + TETES CAIR (30-09-2026, Henri memilih C + D dari "drag
+       lab"). Tombol tidak menempel di jari tapi DIKEJAR pegas: meregang searah
+       gerak, bergoyang saat dilepas, getar kecil tiap 10% tinggi layar. Selama
+       digeser tombolnya jadi kaca cair hijau-biru dengan dua tetes yang tertinggal
+       lalu menyatu kembali (filter "goo" SVG). Lapisan cair itu cuma hidup SELAMA
+       geser/menetap — saat diam tombolnya kembali kaca bening, dan lingkaran
+       rAF-nya berhenti (tidak ada animasi yang jalan terus di HP rep).
+       prefers-reduced-motion: geser langsung seperti dulu, tanpa pegas & cairan. */
+    var lcTenang = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+    var sp = { cur: 0, tgt: 0, v: 0, d1: 0, d2: 0, jalan: false, tik: -1 }, goo = null, gooC = null;
+    function lcBatasTop(v){ var h = window.innerHeight; return Math.max(0.2 * h - 28, Math.min(0.92 * h - 28, v)); }
+    function lcGooNyala(on){
+      if (!goo) {
+        goo = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        goo.setAttribute('class', 'lc-goo'); goo.setAttribute('aria-hidden', 'true');
+        goo.innerHTML = '<defs><filter id="lcGoo" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"/>' +
+          '<feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -10"/></filter>' +
+          '<linearGradient id="lcGooW" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14C47D"/><stop offset="1" stop-color="#1733DE"/></linearGradient></defs>' +
+          '<g filter="url(#lcGoo)" fill="url(#lcGooW)"><circle r="28"/><circle r="18"/><circle r="11"/></g>';
+        document.body.appendChild(goo); gooC = goo.querySelectorAll('circle');
+      }
+      if (on) {
+        // Lapisan selebar 120px menempel di sisi tombol; pusat tombol = 16 + 28 dari tepi.
+        var kiri = lcPosisi().sisi === 'kiri';
+        goo.classList.toggle('lc-goo-kiri', kiri);
+        for (var i = 0; i < 3; i++) gooC[i].setAttribute('cx', kiri ? 44 : 76);
+      }
+      goo.classList.toggle('lc-goo-on', !!on);
+    }
+    function lcPegasLangkah(){
+      sp.v += (sp.tgt - sp.cur) * 0.18; sp.v *= 0.72; sp.cur += sp.v;
+      sp.d1 += (sp.cur - sp.d1) * 0.24; sp.d2 += (sp.cur - sp.d2) * 0.13;   // rapat: kalau tertinggal >±60px leher cairnya putus
+      f.style.top = sp.cur.toFixed(1) + 'px';
+      var k = Math.min(Math.abs(sp.v) / 30, 0.32);
+      f.style.transform = 'scale(' + (1 - k * 0.6).toFixed(3) + ',' + (1 + k).toFixed(3) + ')';
+      gooC[0].setAttribute('cy', sp.cur + 28); gooC[1].setAttribute('cy', sp.d1 + 28); gooC[2].setAttribute('cy', sp.d2 + 28);
+      if (geser) {
+        var t = Math.floor((sp.cur + 28) / (window.innerHeight / 10));
+        if (t !== sp.tik) { if (sp.tik >= 0) try { if (navigator.vibrate) navigator.vibrate(6); } catch (x) {} sp.tik = t; }
+      }
+      if (!geser && Math.abs(sp.tgt - sp.cur) < 0.5 && Math.abs(sp.v) < 0.3 && Math.abs(sp.d2 - sp.cur) < 1) {
+        sp.jalan = false; f.style.transform = ''; f.classList.remove('lc-fab-cair'); lcGooNyala(false); lcTaruhFab();
+        return;
+      }
+      requestAnimationFrame(lcPegasLangkah);
+    }
+    function lcGeserMulai(){
+      geser = true; f.classList.add('lc-fab-geser');
+      if (lcTenang) return;
+      if (!sp.jalan) { sp.cur = sp.d1 = sp.d2 = f.offsetTop; sp.v = 0; }
+      sp.tgt = sp.cur; sp.tik = -1;
+      f.classList.add('lc-fab-cair'); lcGooNyala(true);
+      if (!sp.jalan) { sp.jalan = true; requestAnimationFrame(lcPegasLangkah); }
+    }
+    function lcGeserSelesai(){
+      geser = false; f.classList.remove('lc-fab-geser');
+      // Posisi yang disimpan = TUJUAN pegas, bukan posisi goyangnya saat jari lepas.
+      var h = window.innerHeight, p = lcPosisi(), top = lcTenang ? f.offsetTop : sp.tgt;
+      p.y = (h - (top + 28)) / h; lcSimpan(p);
+      if (lcTenang) lcTaruhFab();          // tanpa pegas: langsung di tempat; dengan pegas: rAF yang menaruhnya
+    }
     f.addEventListener('pointermove', function (e) {
       if (y0 === null) return;
       var dy = e.clientY - y0;
-      if (!geser && Math.abs(dy) > AMBANG) { geser = true; f.classList.add('lc-fab-geser'); }
-      if (geser) { var h = window.innerHeight; f.style.top = Math.max(0.2 * h - 28, Math.min(0.92 * h - 28, top0 + dy)) + 'px'; }
+      if (!geser && Math.abs(dy) > AMBANG) lcGeserMulai();
+      if (!geser) return;
+      if (lcTenang) f.style.top = lcBatasTop(top0 + dy) + 'px';
+      else sp.tgt = lcBatasTop(top0 + dy);
     });
     f.addEventListener('pointerup', function () {
       if (y0 === null) return;
       y0 = null;
-      if (geser) {
-        f.classList.remove('lc-fab-geser');
-        var h = window.innerHeight, p = lcPosisi();
-        p.y = (h - (f.offsetTop + 28)) / h; lcSimpan(p); lcTaruhFab();
-      } else { lcFabKetuk(); }
+      if (geser) lcGeserSelesai(); else lcFabKetuk();
     });
     /* pointercancel = SISTEM yang mengambil sentuhannya (zona gestur Android,
        browser). Dulu diabaikan -> ketukan hilang tanpa bekas. Sentuhan singkat
-       yang belum sempat jadi geseran tetap dihitung KETUKAN. */
+       yang belum sempat jadi geseran tetap dihitung KETUKAN; geseran yang
+       terputus disimpan seperti dilepas (pegas tetap menetap di tujuannya). */
     f.addEventListener('pointercancel', function () {
       var ketuk = (y0 !== null && !geser && Date.now() - t0 < 400);
-      y0 = null; f.classList.remove('lc-fab-geser'); lcTaruhFab();
+      y0 = null;
+      if (geser) lcGeserSelesai(); else { f.classList.remove('lc-fab-geser'); lcTaruhFab(); }
       if (ketuk) lcFabKetuk();
     });
     setTimeout(lcHint, 1200);

@@ -1347,7 +1347,21 @@ var LACI = (function () {
        Android berdensitas tinggi sering lewat 8px, jadi ketukan terbaca "geser"
        dan laci tidak terbuka. 14px masih jauh di bawah geseran yang disengaja. */
     var y0 = null, top0 = 0, geser = false, t0 = 0, AMBANG = 14;
+    /* KLIK HANTU (30-09-2026, video Henri di Android): kerlip muncul tiap ketukan
+       tapi laci TIDAK PERNAH terlihat. Urutannya: pointerup -> laci dibuka, tombol
+       jadi pointer-events:none -> Chrome Android lalu MENEMBAKKAN 'click' ke apa
+       pun yang ada di bawah jari SAAT ITU = tabir laci -> lcTutup(). Buka-tutup
+       dalam satu bingkai. Mouse desktop tidak kena (klik ikut pointer capture ke
+       tombol), jadi pratinjau & uji sintetis selalu lolos. Klik pertama dalam
+       500 ms sesudah tombol membuka laci ditelan — sekaligus menjaga klik itu
+       tidak mendarat di BARIS MENU dan membuka app lain. */
+    var lcHantu = 0;
+    document.addEventListener('click', function (e) {
+      if (!lcHantu || Date.now() - lcHantu > 500 || f.contains(e.target)) return;
+      lcHantu = 0; e.preventDefault(); e.stopImmediatePropagation();
+    }, true);
     function lcFabKetuk(){
+      lcHantu = Date.now();
       lcHintSelesai(); lcBuka(lcPosisi().sisi);
       // Getar pendek = tanda ketukan diterima (Android). iOS mengabaikannya.
       try { if (navigator.vibrate) navigator.vibrate(8); } catch (x) {}
